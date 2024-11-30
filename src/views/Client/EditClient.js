@@ -93,7 +93,13 @@ const EditClient = (contact) => {
       return
     }
 
-    const { errors, data: newTodo } = await client.models.Client.update({
+      const toBeDeletedTodo = {
+       phone_number: phone_no,
+      }
+
+      const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
+
+    const { errors, data: newTodo } = await client.models.Client.create({
       category_id: state.categoryId,
       name: state.name,
       phone_number: phone_no,
