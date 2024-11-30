@@ -36,7 +36,7 @@ const Generic = () => {
     setCategory(items.filter((item) => item.category_id === 'Generic'))
     setFilterItem(
       items
-        .filter((item) => item.category_id === 'Doctor BDS')
+        .filter((item) => item.category_id === 'Generic')
         .sort((a, b) => a.name.localeCompare(b.name)),
     )
     setLoadingActive(false)
