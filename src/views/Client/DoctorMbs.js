@@ -36,7 +36,7 @@ const DoctorMBS = () => {
     setCategory(items.filter((item) => item.category_id === 'Doctor MBS'))
     setFilterItem(
       items
-        .filter((item) => item.category_id === 'Doctor BDS')
+        .filter((item) => item.category_id === 'Doctor MBS')
         .sort((a, b) => a.name.localeCompare(b.name)),
     )
     setLoadingActive(false)
