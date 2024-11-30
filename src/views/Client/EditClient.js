@@ -94,7 +94,7 @@ const EditClient = (contact) => {
     }
 
       const toBeDeletedTodo = {
-       phone_number: phone_no,
+       phone_number: JSON.parse(location.state).phone_number,
       }
 
       const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
