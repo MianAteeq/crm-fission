@@ -84,7 +84,7 @@ const AddClient = () => {
     const { errors, data: newTodo } = await client.models.Client.create({
       category_id: state.categoryId,
       name: state.name,
-      phone_number: state.phone_no,
+      phone_number: phone_no,
 
     })
     if (errors) {
