@@ -16,6 +16,7 @@ import { generateClient } from 'aws-amplify/data'
 import { useEffect } from 'react'
 import { useState } from 'react'
 import { IMaskMixin } from 'react-imask'
+import { useNavigate } from 'react-router-dom'
 const CFormInputWithMask = IMaskMixin(({ inputRef, ...props }) => (
   <CFormInput {...props} ref={inputRef} />
 ))
@@ -29,7 +30,7 @@ const AddClient = () => {
   })
   const [id, setID] = useState('')
   const [error, setError] = useState('')
-
+  const navigate = useNavigate()
   const fetchTodos = async () => {
     const { data: items, errors } = await client.models.Category.list()
     setCategory(items)
@@ -68,16 +69,17 @@ const AddClient = () => {
     let phone_no = state.phone_no.replace('-', '')
     let phoneno = phone_no.replace('+92', '')
     if (phone_no.length < 13) {
-      setError('Phone No is Invalid')
+      setError('Phone No is Invalidd')
     }
-    if (phone_no.length < 13) {
-      setError('Phone No is Invalid')
+    console.log(phoneno.length)
+    if (phone_no.length < 11) {
+      setError('Phone No is Invalidss')
       return
     }
     var regExp = /^0[0-9].*$/
 
     if (regExp.test(phoneno) === true) {
-      setError('Phone No is Invalid')
+      setError('Phone No is Invalids')
       return
     }
 
@@ -85,10 +87,12 @@ const AddClient = () => {
       category_id: state.categoryId,
       name: state.name,
       phone_number: phone_no,
-
     })
     if (errors) {
       setError(errors[0].message)
+      if (errors[0].errorType === 'DynamoDB:ConditionalCheckFailedException') {
+        setError('Phone Number Already Exist')
+      }
     } else {
       setSate({
         name: '',
@@ -96,6 +100,16 @@ const AddClient = () => {
         phone_no: '',
       })
     }
+    navigate('/all/client')
+  }
+  const handleChange = (e) => {
+    let phone_no = e.clipboardData.getData('Text').replace('-', '')
+    let phoneno = phone_no.replace('+92', '')
+    console.log(phoneno.replace(/\b0+/g, ''))
+    setSate({
+      ...state,
+      phone_no: '+92' + phoneno.replace(/\b0+/g, ''),
+    })
   }
   const createForm = () => {
     return (
@@ -107,7 +121,8 @@ const AddClient = () => {
           <div className="m-3">
             <CFormLabel htmlFor="exampleFormControlInput1">Client Category</CFormLabel>
             <CFormSelect
-              aria-label="Select Client Category" value={state.categoryId}
+              aria-label="Select Client Category"
+              value={state.categoryId}
               onChange={(e) => setSate({ ...state, categoryId: e.target.value })}
             >
               <option>Open this select menu</option>
@@ -136,6 +151,7 @@ const AddClient = () => {
               mask="+{92}-0000000000"
               value={state.phone_no}
               onChange={(e) => setSate({ ...state, phone_no: e.target.value })}
+              onPaste={handleChange}
               placeholder="Add Phone Number"
             />
             <p style={{ color: 'red' }}>{error}</p>
