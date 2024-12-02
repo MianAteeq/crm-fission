@@ -112,6 +112,15 @@ const EditClient = (contact) => {
       navigate(-1)
     }
   }
+  const handleChange = (e) => {
+    let phone_no = e.clipboardData.getData('Text').replace('-', '')
+    let phoneno = phone_no.replace('+92', '')
+    console.log(phoneno.replace(/\b0+/g, ''))
+    setSate({
+      ...state,
+      phone_no: '+92' + phoneno.replace(/\b0+/g, ''),
+    })
+  }
   const createForm = () => {
     return (
       <CCard className="mb-4" style={{ width: '60%', margin: '0 auto' }}>
@@ -151,6 +160,7 @@ const EditClient = (contact) => {
               mask="+{92}-0000000000"
               value={state.phone_no}
               onChange={(e) => setSate({ ...state, phone_no: e.target.value })}
+              onPaste={handleChange}
               placeholder="Add Phone Number"
             />
             <p style={{ color: 'red' }}>{error}</p>
