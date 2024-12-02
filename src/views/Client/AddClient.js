@@ -89,9 +89,11 @@ const AddClient = () => {
       phone_number: phone_no,
     })
     if (errors) {
-      setError(errors[0].message)
+     
       if (errors[0].errorType === 'DynamoDB:ConditionalCheckFailedException') {
         setError('Phone Number Already Exist')
+      }else{
+       setError(errors[0].message)
       }
     } else {
       setSate({
