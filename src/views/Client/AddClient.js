@@ -99,8 +99,8 @@ const AddClient = () => {
         categoryId: '',
         phone_no: '',
       })
-    }
     navigate('/all/client')
+    }
   }
   const handleChange = (e) => {
     let phone_no = e.clipboardData.getData('Text').replace('-', '')
