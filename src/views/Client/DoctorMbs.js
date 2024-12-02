@@ -47,6 +47,17 @@ const DoctorMBS = () => {
   }, [])
 
   useEffect(() => {
+    const sub = client.models.Client.observeQuery().subscribe({
+      next: ({ items }) => {
+        setCategory([...items.filter((item) => item.category_id === 'Doctor MBS')])
+        setFilterItem([...items.filter((item) => item.category_id === 'Doctor MBS')])
+      },
+    })
+
+    return () => sub.unsubscribe()
+  }, [])
+
+  useEffect(() => {
     const filtered = categories.filter(
       (item) =>
         item.phone_number && item.phone_number.toLowerCase().includes(filterText.toLowerCase()),
@@ -80,6 +91,18 @@ const DoctorMBS = () => {
     reader.readAsBinaryString(file)
   }
 
+  const deleteRow = async (row) => {
+    const shouldRemove = confirm('are you sure you want to delete?')
+    if (shouldRemove) {
+      const toBeDeletedTodo = {
+        phone_number: row.phone_number,
+      }
+
+      const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
+    }
+  }
+
+
   const columns = [
     {
       name: 'ID',
@@ -97,9 +120,18 @@ const DoctorMBS = () => {
       name: 'Action',
       selector: (row) => {
         return (
-          <NavLink to={{ pathname: '/edit/client' }} state={JSON.stringify(row)}>
-            Edit
-          </NavLink>
+          <>
+            <NavLink to={{ pathname: '/edit/client' }} state={JSON.stringify(row)}>
+              Edit
+            </NavLink>{' '}
+            <span style={{ color: 'black' }}>|</span>
+            <a
+              onClick={() => deleteRow(row)}
+              style={{ color: 'red', marginLeft: 5, cursor: 'pointer' }}
+            >
+              Delete
+            </a>
+          </>
         )
       },
     },
@@ -144,7 +176,7 @@ const DoctorMBS = () => {
         let phone_number = getNumber(item.phone_number)
 
         const { errors, data: newTodo } = await client.models.Client.create({
-          category_id: 'Doctor MBS',
+          category_id: item['category'],
           name: 'No Name',
           phone_number: phone_number,
         })
