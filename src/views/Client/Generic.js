@@ -47,6 +47,17 @@ const Generic = () => {
   }, [])
 
   useEffect(() => {
+    const sub = client.models.Client.observeQuery().subscribe({
+      next: ({ items }) => {
+        setCategory([...items.filter((item) => item.category_id === 'Generic')])
+        setFilterItem([...items.filter((item) => item.category_id === 'Generic')])
+      },
+    })
+
+    return () => sub.unsubscribe()
+  }, [])
+
+  useEffect(() => {
     const filtered = categories.filter(
       (item) =>
         item.phone_number && item.phone_number.toLowerCase().includes(filterText.toLowerCase()),
@@ -79,6 +90,16 @@ const Generic = () => {
 
     reader.readAsBinaryString(file)
   }
+  const deleteRow = async (row) => {
+    const shouldRemove = confirm('are you sure you want to delete?')
+    if (shouldRemove) {
+      const toBeDeletedTodo = {
+        phone_number: row.phone_number,
+      }
+
+      const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
+    }
+  }
 
   const columns = [
     {
@@ -97,9 +118,18 @@ const Generic = () => {
       name: 'Action',
       selector: (row) => {
         return (
-          <NavLink to={{ pathname: '/edit/client' }} state={JSON.stringify(row)}>
-            Edit
-          </NavLink>
+          <>
+            <NavLink to={{ pathname: '/edit/client' }} state={JSON.stringify(row)}>
+              Edit
+            </NavLink>{' '}
+            <span style={{ color: 'black' }}>|</span>
+            <a
+              onClick={() => deleteRow(row)}
+              style={{ color: 'red', marginLeft: 5, cursor: 'pointer' }}
+            >
+              Delete
+            </a>
+          </>
         )
       },
     },
@@ -144,7 +174,7 @@ const Generic = () => {
         let phone_number = getNumber(item.phone_number)
 
         const { errors, data: newTodo } = await client.models.Client.create({
-          category_id: 'Generic',
+          category_id: item['category'],
           name: 'No Name',
           phone_number: phone_number,
         })
