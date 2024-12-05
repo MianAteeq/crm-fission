@@ -176,7 +176,7 @@ const DoctorMBS = () => {
         let phone_number = getNumber(item.phone_number)
 
         const { errors, data: newTodo } = await client.models.Client.create({
-          category_id: item['category'],
+          category_id: 'Doctor MBS',
           name: 'No Name',
           phone_number: phone_number,
         })
