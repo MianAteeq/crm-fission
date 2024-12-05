@@ -15,7 +15,7 @@ Amplify.configure(outputs)
 
 createRoot(document.getElementById('root')).render(
   <Provider store={store}>
-  <Authenticator>
+  <Authenticator hideSignUp={true}>
 
     <App />
   </Authenticator>
