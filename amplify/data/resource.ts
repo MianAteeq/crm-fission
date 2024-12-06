@@ -14,6 +14,7 @@ const schema = a.schema({
       name: a.string().required(),
       toID: a.id().required(),
       clients: a.hasMany('Client', 'category_id'),
+      emails: a.hasMany('EmailList', 'category_id'),
     }).identifier(['toID']).authorization((allow) => [allow.authenticated('identityPool')]),
 
     Client: a
@@ -24,6 +25,19 @@ const schema = a.schema({
       email: a.string(),
       category: a.belongsTo('Category', 'category_id'),
     }).identifier(['phone_number']).authorization((allow) => [allow.authenticated('identityPool')]),
+
+
+    EmailList: a
+    .model({
+      category_id: a.id(),
+      email: a.string().required(),
+      name: a.string(),
+      category: a.belongsTo('Category', 'category_id'),
+    }).identifier(['email']).authorization((allow) => [allow.authenticated('identityPool')]),
+
+
+
+
 
 
 });

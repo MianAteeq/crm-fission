@@ -16,26 +16,36 @@ import { generateClient } from 'aws-amplify/data'
 import { useEffect } from 'react'
 import { useState } from 'react'
 import { IMaskMixin } from 'react-imask'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 const CFormInputWithMask = IMaskMixin(({ inputRef, ...props }) => (
   <CFormInput {...props} ref={inputRef} />
 ))
 const client = generateClient()
-const AddClient = () => {
+const EditEmail = (contact) => {
   const [categories, setCategory] = useState([])
+  const navigate = useNavigate()
   const [state, setSate] = useState({
     name: '',
     categoryId: '',
-    phone_no: '',
+    email: '',
   })
   const [id, setID] = useState('')
   const [error, setError] = useState('')
-  const navigate = useNavigate()
+
   const fetchTodos = async () => {
     const { data: items, errors } = await client.models.Category.list()
     setCategory(items)
   }
+  let location = useLocation()
 
+  useEffect(() => {
+    let obj = JSON.parse(location.state)
+    setSate({
+      name: obj.name,
+      categoryId: obj.category_id,
+      email: obj.email,
+    })
+  }, [location])
   useEffect(() => {
     fetchTodos()
   }, [])
@@ -44,6 +54,11 @@ const AddClient = () => {
     setVisible(true)
     setID(record.toID)
     setName(record.name)
+  }
+
+  const validateEmail = (email) => {
+    var re = /\S+@\S+\.\S+/
+    return re.test(email)
   }
 
   const saveDate = async () => {
@@ -59,65 +74,53 @@ const AddClient = () => {
     } else {
       setError('')
     }
-    if (!state.phone_no.trim()) {
+    if (!state.email.trim()) {
       setError('This field is required.')
       return
     } else {
       setError('')
     }
+    if (validateEmail(state.email) === false) {
+      setError('Email is Invalid')
 
-    let phone_no = state.phone_no.replace('-', '')
-    let phoneno = phone_no.replace('+92', '')
-    if (phone_no.length < 13) {
-      setError('Phone No is Invalidd')
-    }
-    console.log(phoneno.length)
-    if (phone_no.length < 11) {
-      setError('Phone No is Invalidss')
-      return
-    }
-    var regExp = /^0[0-9].*$/
-
-    if (regExp.test(phoneno) === true) {
-      setError('Phone No is Invalids')
       return
     }
 
-    const { errors, data: newTodo } = await client.models.Client.create({
+    const toBeDeletedTodo = {
+      email: JSON.parse(location.state).email,
+    }
+
+    const { data: deletedTodo, error } = await client.models.EmailList.delete(toBeDeletedTodo)
+
+    const { errors, data: newTodo } = await client.models.EmailList.create({
       category_id: state.categoryId,
       name: state.name,
-      phone_number: phone_no,
+      email: state.email,
     })
     if (errors) {
-
       if (errors[0].errorType === 'DynamoDB:ConditionalCheckFailedException') {
-        setError('Phone Number Already Exist')
-      }else{
-       setError(errors[0].message)
+        setError('Email Already Exist')
+      } else {
+        setError(errors[0].message)
       }
     } else {
-      setSate({
-        name: '',
-        categoryId: '',
-        phone_no: '',
-      })
-    navigate('/all/client')
+      navigate(-1)
     }
   }
   const handleChange = (e) => {
-    let phone_no = e.clipboardData.getData('Text').replace('-', '')
-    let phoneno = phone_no.replace('+92', '')
-    console.log(phoneno.replace(/\b0+/g, ''))
+    let email = e.clipboardData.getData('Text')
+
     setSate({
       ...state,
-      phone_no: '+92' + phoneno.replace(/\b0+/g, ''),
+      email: email,
     })
   }
+  console.log(state)
   const createForm = () => {
     return (
       <CCard className="mb-4" style={{ width: '60%', margin: '0 auto' }}>
         <CCardHeader>
-          <strong>{id ? 'Update' : 'Add'} Client</strong>
+          <strong>Update Email</strong>
         </CCardHeader>
         <CForm>
           <div className="m-3">
@@ -149,19 +152,21 @@ const AddClient = () => {
           </div>
           <div className="m-3">
             <CFormLabel htmlFor="exampleFormControlInput1">Phone No</CFormLabel>
-            <CFormInputWithMask
-              mask="+{92}-0000000000"
-              value={state.phone_no}
-              onChange={(e) => setSate({ ...state, phone_no: e.target.value })}
+            <CFormInput
+              type="email"
+              id="exampleFormControlInput1"
+              name="email"
+              value={state.email}
+              onChange={(e) => setSate({ ...state, email: e.target.value })}
               onPaste={handleChange}
-              placeholder="Add Phone Number"
+              placeholder="Add Email"
             />
             <p style={{ color: 'red' }}>{error}</p>
           </div>
           <div className="m-3">
             <div className="d-grid gap-2 col-6 mx-auto">
               <CButton color="primary" style={{ marginTop: '4%' }} onClick={() => saveDate()}>
-                {id ? 'Update' : 'Submit'}
+                Update
               </CButton>
             </div>
           </div>
@@ -176,4 +181,4 @@ const AddClient = () => {
   )
 }
 
-export default AddClient
+export default EditEmail

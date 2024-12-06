@@ -7,6 +7,14 @@ import DoctorMbs from './views/Client/DoctorMbs'
 import Patient from './views/Client/Patient'
 import Generic from './views/Client/Generic'
 import EditClient from './views/Client/EditClient'
+
+import AddEmail from './views/Email/AddEmail'
+import AllEmail from './views/Email/AllEmail'
+import DoctorDBSEmail from './views/Email/DoctorDbsEmail'
+import DoctorMbsEmail from './views/Email/DoctorMbsEmail'
+import PatientEmail from './views/Email/PatientEmail'
+import GenericEmail from './views/Email/GenericEmail'
+import EditEmail from './views/Email/EditEmail'
 // import CategoryList from './views/categories/categoryList'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
@@ -65,6 +73,7 @@ const routes = [
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/category/list', name: 'Category List', element: CategoryList, exact: true },
+
   { path: '/add/client', name: 'Add Client', element: AddClient, exact: true },
   { path: '/edit/client', name: 'Edit Client', element: EditClient, exact: true },
   { path: '/all/client', name: 'All Client', element: AllContact, exact: true },
@@ -72,48 +81,14 @@ const routes = [
   { path: '/doctor/mbs/client', name: 'Doctor MBS Client', element: DoctorMbs, exact: true },
   { path: '/patient/client', name: 'Patient ', element: Patient, exact: true },
   { path: '/generic/client', name: 'Generic ', element: Generic, exact: true },
-  // { path: '/theme/colors', name: 'Colors', element: Colors },
-  // { path: '/theme/typography', name: 'Typography', element: Typography },
-  // { path: '/base', name: 'Base', element: Cards, exact: true },
-  // { path: '/base/accordion', name: 'Accordion', element: Accordion },
-  // { path: '/base/breadcrumbs', name: 'Breadcrumbs', element: Breadcrumbs },
-  // { path: '/base/cards', name: 'Cards', element: Cards },
-  // { path: '/base/carousels', name: 'Carousel', element: Carousels },
-  // { path: '/base/collapses', name: 'Collapse', element: Collapses },
-  // { path: '/base/list-groups', name: 'List Groups', element: ListGroups },
-  // { path: '/base/navs', name: 'Navs', element: Navs },
-  // { path: '/base/paginations', name: 'Paginations', element: Paginations },
-  // { path: '/base/placeholders', name: 'Placeholders', element: Placeholders },
-  // { path: '/base/popovers', name: 'Popovers', element: Popovers },
-  // { path: '/base/progress', name: 'Progress', element: Progress },
-  // { path: '/base/spinners', name: 'Spinners', element: Spinners },
-  // { path: '/base/tabs', name: 'Tabs', element: Tabs },
-  // { path: '/base/tables', name: 'Tables', element: Tables },
-  // { path: '/base/tooltips', name: 'Tooltips', element: Tooltips },
-  // { path: '/buttons', name: 'Buttons', element: Buttons, exact: true },
-  // { path: '/buttons/buttons', name: 'Buttons', element: Buttons },
-  // { path: '/buttons/dropdowns', name: 'Dropdowns', element: Dropdowns },
-  // { path: '/buttons/button-groups', name: 'Button Groups', element: ButtonGroups },
-  // { path: '/charts', name: 'Charts', element: Charts },
-  // { path: '/forms', name: 'Forms', element: FormControl, exact: true },
-  // { path: '/forms/form-control', name: 'Form Control', element: FormControl },
-  // { path: '/forms/select', name: 'Select', element: Select },
-  // { path: '/forms/checks-radios', name: 'Checks & Radios', element: ChecksRadios },
-  // { path: '/forms/range', name: 'Range', element: Range },
-  // { path: '/forms/input-group', name: 'Input Group', element: InputGroup },
-  // { path: '/forms/floating-labels', name: 'Floating Labels', element: FloatingLabels },
-  // { path: '/forms/layout', name: 'Layout', element: Layout },
-  // { path: '/forms/validation', name: 'Validation', element: Validation },
-  // { path: '/icons', exact: true, name: 'Icons', element: CoreUIIcons },
-  // { path: '/icons/coreui-icons', name: 'CoreUI Icons', element: CoreUIIcons },
-  // { path: '/icons/flags', name: 'Flags', element: Flags },
-  // { path: '/icons/brands', name: 'Brands', element: Brands },
-  // { path: '/notifications', name: 'Notifications', element: Alerts, exact: true },
-  // { path: '/notifications/alerts', name: 'Alerts', element: Alerts },
-  // { path: '/notifications/badges', name: 'Badges', element: Badges },
-  // { path: '/notifications/modals', name: 'Modals', element: Modals },
-  // { path: '/notifications/toasts', name: 'Toasts', element: Toasts },
-  // { path: '/widgets', name: 'Widgets', element: Widgets },
+
+  { path: '/add/email', name: 'Add Email', element: AddEmail, exact: true },
+  { path: '/edit/email', name: 'Edit Email', element: EditEmail, exact: true },
+  { path: '/all/email', name: 'All Email', element: AllEmail, exact: true },
+  { path: '/doctor/dbs/email', name: 'Doctor Dbs Email', element: DoctorDBSEmail, exact: true },
+  { path: '/doctor/mbs/email', name: 'Doctor MBS Email', element: DoctorMbsEmail, exact: true },
+  { path: '/patient/email', name: 'Patient Email ', element: PatientEmail, exact: true },
+  { path: '/generic/email', name: 'Generic Email ', element: GenericEmail, exact: true },
 ]
 
 export default routes

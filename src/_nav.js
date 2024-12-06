@@ -1,6 +1,7 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
 import {
+  cibGmail,
   cilBell,
   cilCalculator,
   cilChartPie,
@@ -74,6 +75,44 @@ const _nav = [
         component: CNavItem,
         name: 'Generic Contact',
         to: '/generic/client',
+      },
+    ],
+  },
+  {
+    component: CNavGroup,
+    name: 'Email List',
+    to: '/base',
+    icon: <CIcon icon={cibGmail} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Add Email',
+        to: '/add/email',
+      },
+      {
+        component: CNavItem,
+        name: 'All Email',
+        to: '/all/email',
+      },
+      {
+        component: CNavItem,
+        name: 'Doctor BDS Email',
+        to: '/doctor/dbs/email',
+      },
+      {
+        component: CNavItem,
+        name: 'Doctor MBS Email',
+        to: '/doctor/mbs/email',
+      },
+      {
+        component: CNavItem,
+        name: 'Patient Email',
+        to: '/patient/email',
+      },
+      {
+        component: CNavItem,
+        name: 'Generic Email',
+        to: '/generic/email',
       },
     ],
   },
