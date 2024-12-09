@@ -141,7 +141,7 @@ const AddEmail = () => {
             <p style={{ color: 'red' }}>{!state.name ? error : ''}</p>
           </div>
           <div className="m-3">
-            <CFormLabel htmlFor="exampleFormControlInput1">Phone No</CFormLabel>
+            <CFormLabel htmlFor="exampleFormControlInput1">Email</CFormLabel>
             <CFormInput
               type="email"
               id="exampleFormControlInput1"
