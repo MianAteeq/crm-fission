@@ -63,7 +63,7 @@ const _nav = [
       },
       {
         component: CNavItem,
-        name: 'Doctor MBS Contact',
+        name: 'Doctor MBBS Contact',
         to: '/doctor/mbs/client',
       },
       {
@@ -101,7 +101,7 @@ const _nav = [
       },
       {
         component: CNavItem,
-        name: 'Doctor MBS Email',
+        name: 'Doctor MBBS Email',
         to: '/doctor/mbs/email',
       },
       {
