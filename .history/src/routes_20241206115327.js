@@ -15,8 +15,6 @@ import DoctorMbsEmail from './views/Email/DoctorMbsEmail'
 import PatientEmail from './views/Email/PatientEmail'
 import GenericEmail from './views/Email/GenericEmail'
 import EditEmail from './views/Email/EditEmail'
-import { getCats } from './helpers/helper'
-
 // import CategoryList from './views/categories/categoryList'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
@@ -70,26 +68,6 @@ const Toasts = React.lazy(() => import('./views/notifications/toasts/Toasts'))
 
 const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 
-
- let records=await getCats()
-
- let route=[];
- records.sort((a, b) => a.name.localeCompare(b.name)).forEach((item)=>{
-  let obj={ path: `${item.name.replace(" ","-").toLowerCase()}/client`, name: item.name, element: DoctorDBS }
-
-  route.push(obj)
-
-
-  })
- let email_route=[];
- records.sort((a, b) => a.name.localeCompare(b.name)).forEach((item)=>{
-  let obj={ path: `${item.name.replace(" ","-").toLowerCase()}/email`, name: item.name, element: DoctorDBSEmail }
-
-  email_route.push(obj)
-
-
-  })
-
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
@@ -99,19 +77,18 @@ const routes = [
   { path: '/add/client', name: 'Add Client', element: AddClient, exact: true },
   { path: '/edit/client', name: 'Edit Client', element: EditClient, exact: true },
   { path: '/all/client', name: 'All Client', element: AllContact, exact: true },
-  // { path: '/doctor/dbs/client', name: 'Doctor Dbs Client', element: DoctorDBS, exact: true },
-  // { path: '/doctor/mbs/client', name: 'Doctor MBS Client', element: DoctorMbs, exact: true },
-  // { path: '/patient/client', name: 'Patient ', element: Patient, exact: true },
-  // { path: '/generic/client', name: 'Generic ', element: Generic, exact: true },
+  { path: '/doctor/dbs/client', name: 'Doctor Dbs Client', element: DoctorDBS, exact: true },
+  { path: '/doctor/mbs/client', name: 'Doctor MBS Client', element: DoctorMbs, exact: true },
+  { path: '/patient/client', name: 'Patient ', element: Patient, exact: true },
+  { path: '/generic/client', name: 'Generic ', element: Generic, exact: true },
 
   { path: '/add/email', name: 'Add Email', element: AddEmail, exact: true },
   { path: '/edit/email', name: 'Edit Email', element: EditEmail, exact: true },
   { path: '/all/email', name: 'All Email', element: AllEmail, exact: true },
-  // { path: '/doctor/dbs/email', name: 'Doctor Dbs Email', element: DoctorDBSEmail, exact: true },
-  // { path: '/doctor/mbs/email', name: 'Doctor MBS Email', element: DoctorMbsEmail, exact: true },
-  // { path: '/patient/email', name: 'Patient Email ', element: PatientEmail, exact: true },
-  // { path: '/generic/email', name: 'Generic Email ', element: GenericEmail, exact: true },
+  { path: '/doctor/dbs/email', name: 'Doctor Dbs Email', element: DoctorDBSEmail, exact: true },
+  { path: '/doctor/mbs/email', name: 'Doctor MBS Email', element: DoctorMbsEmail, exact: true },
+  { path: '/patient/email', name: 'Patient Email ', element: PatientEmail, exact: true },
+  { path: '/generic/email', name: 'Generic Email ', element: GenericEmail, exact: true },
 ]
 
-console.log((routes.concat(route)).concat(email_route))
-export default (routes.concat(route)).concat(email_route)
+export default routes

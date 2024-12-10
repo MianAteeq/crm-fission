@@ -264,7 +264,7 @@ console.log(name)
         {visible == true ? createForm() : null}
         <CCard className="mb-4">
           <CCardHeader>
-            <strong>{name} Email List</strong>{' '}
+            <strong>Doctor BDS Email List</strong>{' '}
             <CButton
               color="primary"
               style={{ float: 'right' }}

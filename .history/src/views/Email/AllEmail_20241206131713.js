@@ -18,9 +18,9 @@ import { useState } from 'react'
 import DataTable from 'react-data-table-component'
 import * as XLSX from 'xlsx'
 import styled from 'styled-components'
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 const client = generateClient()
-const DoctorDBSEmail = () => {
+const AllEmail = () => {
   const [categories, setCategory] = useState([])
   const [filteredItems, setFilterItem] = useState([])
   const [visible, setVisible] = useState(false)
@@ -28,56 +28,29 @@ const DoctorDBSEmail = () => {
   const [loadingTable, setLoadingActive] = useState(true)
   const [filterText, setFilterText] = React.useState('')
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false)
-  const location = useLocation()
 
-  const [name, setName] = useState(
-    location.pathname.replace('email', '').replace('/', '').replace('/', '').replace('-', ' '),
-  )
   const fetchTodos = async () => {
     const { data: items, errors } = await client.models.EmailList.list({
-      limit: 20000,
+      limit: 2000,
     })
-    setCategory(items.filter((item) => item.category_id === name))
-    setFilterItem(
-      items
-        .filter((item) => item.category_id === name)
-        .sort((a, b) => a.name.localeCompare(b.name)),
-    )
+    setCategory(items)
+    setFilterItem(items.sort((a, b) => a.name.localeCompare(b.name)))
     setLoadingActive(false)
   }
 
   useEffect(() => {
     fetchTodos()
-  }, [name])
-  const capitalizeFirstLetter = (val) => {
-    return String(val).charAt(0).toUpperCase() + String(val).slice(1)
-  }
-
-  useEffect(() => {
-    let pathName = location.pathname
-      .replace('email', '')
-      .replace('/', '')
-      .replace('/', '')
-      .replace('-', ' ')
-    if (capitalizeFirstLetter(pathName) === 'Doctor bds') {
-      setName('Doctor BDS')
-    } else if (capitalizeFirstLetter(pathName) === 'Doctor mbs') {
-      setName('Doctor MBBS')
-    } else {
-      setName(capitalizeFirstLetter(pathName))
-    }
-  }, [location])
-
+  }, [])
   useEffect(() => {
     const sub = client.models.EmailList.observeQuery().subscribe({
       next: ({ items }) => {
-        setCategory([...items.filter((item) => item.category_id === name)])
-        setFilterItem([...items.filter((item) => item.category_id === name)])
+        setCategory([...items.sort((a, b) => a.name.localeCompare(b.name))])
+        setFilterItem([...items.sort((a, b) => a.name.localeCompare(b.name))])
       },
     })
 
     return () => sub.unsubscribe()
-  }, [name])
+  }, [])
 
   useEffect(() => {
     const filtered = categories.filter(
@@ -128,10 +101,6 @@ const DoctorDBSEmail = () => {
       selector: (row, i) => i + 1,
     },
     {
-      name: 'Category',
-      selector: (row) => row.category_id,
-    },
-    {
       name: 'Name',
       selector: (row) => row.name,
     },
@@ -160,6 +129,32 @@ const DoctorDBSEmail = () => {
     },
   ]
 
+  const getNumber = (phone_number) => {
+    if (phone_number === undefined) {
+      return
+    }
+    var regex = /(9|04)\d{8}/g
+    var regexThree = /(3)\d{8}/g
+    var regExpZero = /^0[0-9].*$/
+
+    if (regex.test(phone_number) === true) {
+      return `+${phone_number}`
+    }
+    if (phone_number.toString()[0] === '0') {
+      // Convert number into a string
+      let numberStr = phone_number.toString()
+
+      // Replace the 0 with empty string
+      const res = numberStr.replace(numberStr[3], '')
+
+      return `+92${Number(res)}`
+    }
+    if (phone_number.toString()[0] === '3') {
+      return `+92${Number(phone_number)}`
+    } else {
+      return 0
+    }
+  }
   const validateEmail = (email) => {
     var re = /\S+@\S+\.\S+/
     return re.test(email)
@@ -170,7 +165,7 @@ const DoctorDBSEmail = () => {
       if (validateEmail(item.email) === true) {
         if (item.email !== undefined) {
           const { errors, data: newTodo } = await client.models.EmailList.create({
-            category_id: name,
+            category_id: item['category'] ?? 'Generic',
             name: 'No Name',
             email: item.email,
           })
@@ -180,7 +175,6 @@ const DoctorDBSEmail = () => {
 
     return true
   }
-console.log(name)
   const createForm = () => {
     return (
       <CCard className="mb-4" style={{ width: '60%', margin: '0 auto' }}>
@@ -264,7 +258,7 @@ console.log(name)
         {visible == true ? createForm() : null}
         <CCard className="mb-4">
           <CCardHeader>
-            <strong>{name} Email List</strong>{' '}
+            <strong>All Email List</strong>{' '}
             <CButton
               color="primary"
               style={{ float: 'right' }}
@@ -312,4 +306,4 @@ console.log(name)
   )
 }
 
-export default DoctorDBSEmail
+export default AllEmail

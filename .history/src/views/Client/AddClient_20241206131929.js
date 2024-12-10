@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-key */
 import React from 'react'
 import {
   CCard,
@@ -90,10 +89,11 @@ const AddClient = () => {
       phone_number: phone_no,
     })
     if (errors) {
+
       if (errors[0].errorType === 'DynamoDB:ConditionalCheckFailedException') {
         setError('Phone Number Already Exist')
-      } else {
-        setError(errors[0].message)
+      }else{
+       setError(errors[0].message)
       }
     } else {
       setSate({
@@ -101,7 +101,7 @@ const AddClient = () => {
         categoryId: '',
         phone_no: '',
       })
-      navigate('/all/client')
+    navigate('/all/client')
     }
   }
   const handleChange = (e) => {
@@ -130,11 +130,7 @@ const AddClient = () => {
               <option>Open this select menu</option>
               {categories.map((item) => {
                 // eslint-disable-next-line react/jsx-key
-                return (
-                  <option value={item.toID}>
-                    {item.name === 'Doctor MBS' ? 'Doctor MBBS' : item.name}
-                  </option>
-                )
+                return <option value={item.toID}>{item.name}</option>
               })}
             </CFormSelect>
             <p style={{ color: 'red' }}>{!state.categoryId ? error : ''}</p>

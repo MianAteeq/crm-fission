@@ -35,7 +35,7 @@ records.sort((a, b) => a.name.localeCompare(b.name)).forEach((item)=>{
 
   let name=item.name==="Doctor MBS"?'Doctor MBBS':item.name
 
-  let obj={ to: `/${item.name.replace(" ","-").toLowerCase()}/client`, name: name,  component: CNavItem }
+  let obj={ to: `/${name.replace(" ","-").toLowerCase()}/client`, name: item.name,  component: CNavItem }
 
   route.push(obj)
 
@@ -54,7 +54,7 @@ records.sort((a, b) => a.name.localeCompare(b.name)).forEach((item)=>{
   },]
 records.sort((a, b) => a.name.localeCompare(b.name)).forEach((item)=>{
   let name=item.name==="Doctor MBS"?'Doctor MBBS':item.name
-  let obj={ to: `/${item.name.replace(" ","-").toLowerCase()}/email`, name: name,  component: CNavItem }
+  let obj={ to: `/${name.replace(" ","-").toLowerCase()}/email`, name: item.name,  component: CNavItem }
 
   route_email.push(obj)
 

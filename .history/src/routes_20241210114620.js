@@ -74,18 +74,10 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
  let records=await getCats()
 
  let route=[];
- records.sort((a, b) => a.name.localeCompare(b.name)).forEach((item)=>{
-  let obj={ path: `${item.name.replace(" ","-").toLowerCase()}/client`, name: item.name, element: DoctorDBS }
+ records.forEach((item)=>{
+  let obj={ path: '/doctor/dbs/client', name: item.name, element: DoctorDBS, exact: true }
 
   route.push(obj)
-
-
-  })
- let email_route=[];
- records.sort((a, b) => a.name.localeCompare(b.name)).forEach((item)=>{
-  let obj={ path: `${item.name.replace(" ","-").toLowerCase()}/email`, name: item.name, element: DoctorDBSEmail }
-
-  email_route.push(obj)
 
 
   })
@@ -107,11 +99,11 @@ const routes = [
   { path: '/add/email', name: 'Add Email', element: AddEmail, exact: true },
   { path: '/edit/email', name: 'Edit Email', element: EditEmail, exact: true },
   { path: '/all/email', name: 'All Email', element: AllEmail, exact: true },
-  // { path: '/doctor/dbs/email', name: 'Doctor Dbs Email', element: DoctorDBSEmail, exact: true },
-  // { path: '/doctor/mbs/email', name: 'Doctor MBS Email', element: DoctorMbsEmail, exact: true },
-  // { path: '/patient/email', name: 'Patient Email ', element: PatientEmail, exact: true },
-  // { path: '/generic/email', name: 'Generic Email ', element: GenericEmail, exact: true },
+  { path: '/doctor/dbs/email', name: 'Doctor Dbs Email', element: DoctorDBSEmail, exact: true },
+  { path: '/doctor/mbs/email', name: 'Doctor MBS Email', element: DoctorMbsEmail, exact: true },
+  { path: '/patient/email', name: 'Patient Email ', element: PatientEmail, exact: true },
+  { path: '/generic/email', name: 'Generic Email ', element: GenericEmail, exact: true },
 ]
 
-console.log((routes.concat(route)).concat(email_route))
-export default (routes.concat(route)).concat(email_route)
+// console.log(routes.concat(route))
+export default routes.concat(route)

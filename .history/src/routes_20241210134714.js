@@ -107,10 +107,10 @@ const routes = [
   { path: '/add/email', name: 'Add Email', element: AddEmail, exact: true },
   { path: '/edit/email', name: 'Edit Email', element: EditEmail, exact: true },
   { path: '/all/email', name: 'All Email', element: AllEmail, exact: true },
-  // { path: '/doctor/dbs/email', name: 'Doctor Dbs Email', element: DoctorDBSEmail, exact: true },
-  // { path: '/doctor/mbs/email', name: 'Doctor MBS Email', element: DoctorMbsEmail, exact: true },
-  // { path: '/patient/email', name: 'Patient Email ', element: PatientEmail, exact: true },
-  // { path: '/generic/email', name: 'Generic Email ', element: GenericEmail, exact: true },
+  { path: '/doctor/dbs/email', name: 'Doctor Dbs Email', element: DoctorDBSEmail, exact: true },
+  { path: '/doctor/mbs/email', name: 'Doctor MBS Email', element: DoctorMbsEmail, exact: true },
+  { path: '/patient/email', name: 'Patient Email ', element: PatientEmail, exact: true },
+  { path: '/generic/email', name: 'Generic Email ', element: GenericEmail, exact: true },
 ]
 
 console.log((routes.concat(route)).concat(email_route))

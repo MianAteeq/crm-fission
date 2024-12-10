@@ -71,8 +71,8 @@ const DoctorDBSEmail = () => {
   useEffect(() => {
     const sub = client.models.EmailList.observeQuery().subscribe({
       next: ({ items }) => {
-        setCategory([...items.filter((item) => item.category_id === name)])
-        setFilterItem([...items.filter((item) => item.category_id === name)])
+        setCategory([...items.filter((item) => item.category_id === 'Doctor BDS')])
+        setFilterItem([...items.filter((item) => item.category_id === 'Doctor BDS')])
       },
     })
 
@@ -126,10 +126,6 @@ const DoctorDBSEmail = () => {
     {
       name: 'ID',
       selector: (row, i) => i + 1,
-    },
-    {
-      name: 'Category',
-      selector: (row) => row.category_id,
     },
     {
       name: 'Name',
@@ -264,7 +260,7 @@ console.log(name)
         {visible == true ? createForm() : null}
         <CCard className="mb-4">
           <CCardHeader>
-            <strong>{name} Email List</strong>{' '}
+            <strong>Doctor BDS Email List</strong>{' '}
             <CButton
               color="primary"
               style={{ float: 'right' }}

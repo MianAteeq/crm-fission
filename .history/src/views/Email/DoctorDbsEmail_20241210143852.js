@@ -128,10 +128,6 @@ const DoctorDBSEmail = () => {
       selector: (row, i) => i + 1,
     },
     {
-      name: 'Category',
-      selector: (row) => row.category_id,
-    },
-    {
       name: 'Name',
       selector: (row) => row.name,
     },
@@ -264,7 +260,7 @@ console.log(name)
         {visible == true ? createForm() : null}
         <CCard className="mb-4">
           <CCardHeader>
-            <strong>{name} Email List</strong>{' '}
+            <strong>Doctor BDS Email List</strong>{' '}
             <CButton
               color="primary"
               style={{ float: 'right' }}

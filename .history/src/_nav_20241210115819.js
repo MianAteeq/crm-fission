@@ -20,47 +20,6 @@ import {
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 import { getCats } from './helpers/helper'
 let records=await getCats()
-
-let route=[{
-  component: CNavItem,
-  name: 'Add Contact',
-  to: '/add/client',
-},
-{
-  component: CNavItem,
-  name: 'All Contact',
-  to: '/all/client',
-}]
-records.sort((a, b) => a.name.localeCompare(b.name)).forEach((item)=>{
-
-  let name=item.name==="Doctor MBS"?'Doctor MBBS':item.name
-
-  let obj={ to: `/${item.name.replace(" ","-").toLowerCase()}/client`, name: name,  component: CNavItem }
-
-  route.push(obj)
-
-
-  })
-
-  let route_email=[ {
-    component: CNavItem,
-    name: 'Add Email',
-    to: '/add/email',
-  },
-  {
-    component: CNavItem,
-    name: 'All Email',
-    to: '/all/email',
-  },]
-records.sort((a, b) => a.name.localeCompare(b.name)).forEach((item)=>{
-  let name=item.name==="Doctor MBS"?'Doctor MBBS':item.name
-  let obj={ to: `/${item.name.replace(" ","-").toLowerCase()}/email`, name: name,  component: CNavItem }
-
-  route_email.push(obj)
-
-
-  })
-
 const _nav = [
   {
     component: CNavItem,
@@ -87,14 +46,51 @@ const _nav = [
     name: 'Contact List',
     to: '/base',
     icon: <CIcon icon={cilContact} customClassName="nav-icon" />,
-    items: route,
+    items: records.map((item)=>{
+      return{
+        component: CNavItem,
+        name: `${item.name} Contact`,
+        to: '/doctor/${item.name.replace(" ","").toLowerCase()}/client',
+      }
+    }),
   },
   {
     component: CNavGroup,
     name: 'Email List',
     to: '/base',
     icon: <CIcon icon={cibGmail} customClassName="nav-icon" />,
-    items: route_email,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Add Email',
+        to: '/add/email',
+      },
+      {
+        component: CNavItem,
+        name: 'All Email',
+        to: '/all/email',
+      },
+      {
+        component: CNavItem,
+        name: 'Doctor BDS Email',
+        to: '/doctor/dbs/email',
+      },
+      {
+        component: CNavItem,
+        name: 'Doctor MBBS Email',
+        to: '/doctor/mbs/email',
+      },
+      {
+        component: CNavItem,
+        name: 'Patient Email',
+        to: '/patient/email',
+      },
+      {
+        component: CNavItem,
+        name: 'Generic Email',
+        to: '/generic/email',
+      },
+    ],
   },
   // {
   //   component: CNavItem,

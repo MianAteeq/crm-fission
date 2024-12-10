@@ -18,9 +18,9 @@ import { useState } from 'react'
 import DataTable from 'react-data-table-component'
 import * as XLSX from 'xlsx'
 import styled from 'styled-components'
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation, useParams } from 'react-router-dom'
 const client = generateClient()
-const DoctorDBSEmail = () => {
+const DoctorDBS = () => {
   const [categories, setCategory] = useState([])
   const [filteredItems, setFilterItem] = useState([])
   const [visible, setVisible] = useState(false)
@@ -31,11 +31,15 @@ const DoctorDBSEmail = () => {
   const location = useLocation()
 
   const [name, setName] = useState(
-    location.pathname.replace('email', '').replace('/', '').replace('/', '').replace('-', ' '),
+    location.pathname.replace('client', '').replace('/', '').replace('/', '').replace('-', ' '),
   )
+
+  const capitalizeFirstLetter = (val) => {
+    return String(val).charAt(0).toUpperCase() + String(val).slice(1)
+  }
   const fetchTodos = async () => {
-    const { data: items, errors } = await client.models.EmailList.list({
-      limit: 20000,
+    const { data: items, errors } = await client.models.Client.list({
+      limit: 2000,
     })
     setCategory(items.filter((item) => item.category_id === name))
     setFilterItem(
@@ -47,15 +51,8 @@ const DoctorDBSEmail = () => {
   }
 
   useEffect(() => {
-    fetchTodos()
-  }, [name])
-  const capitalizeFirstLetter = (val) => {
-    return String(val).charAt(0).toUpperCase() + String(val).slice(1)
-  }
-
-  useEffect(() => {
     let pathName = location.pathname
-      .replace('email', '')
+      .replace('client', '')
       .replace('/', '')
       .replace('/', '')
       .replace('-', ' ')
@@ -69,10 +66,17 @@ const DoctorDBSEmail = () => {
   }, [location])
 
   useEffect(() => {
-    const sub = client.models.EmailList.observeQuery().subscribe({
+    fetchTodos()
+  }, [name])
+
+  console.log(name)
+
+  useEffect(() => {
+    const sub = client.models.Client.observeQuery().subscribe({
       next: ({ items }) => {
-        setCategory([...items.filter((item) => item.category_id === name)])
-        setFilterItem([...items.filter((item) => item.category_id === name)])
+        console.log(items.filter((item) => item.category_id.toString() === name))
+        setCategory([...items.filter((item) => item.category_id.toString() == name.toString())])
+        setFilterItem([...items.filter((item) => item.category_id.toString() == name)])
       },
     })
 
@@ -81,7 +85,8 @@ const DoctorDBSEmail = () => {
 
   useEffect(() => {
     const filtered = categories.filter(
-      (item) => item.email && item.email.toLowerCase().includes(filterText.toLowerCase()),
+      (item) =>
+        item.phone_number && item.phone_number.toLowerCase().includes(filterText.toLowerCase()),
     )
     setFilterItem(filtered)
   }, [filterText])
@@ -115,10 +120,10 @@ const DoctorDBSEmail = () => {
     const shouldRemove = confirm('are you sure you want to delete?')
     if (shouldRemove) {
       const toBeDeletedTodo = {
-        email: row.email,
+        phone_number: row.phone_number,
       }
 
-      const { data: deletedTodo, error } = await client.models.EmailList.delete(toBeDeletedTodo)
+      const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
     }
   }
 
@@ -128,23 +133,19 @@ const DoctorDBSEmail = () => {
       selector: (row, i) => i + 1,
     },
     {
-      name: 'Category',
-      selector: (row) => row.category_id,
-    },
-    {
       name: 'Name',
       selector: (row) => row.name,
     },
     {
-      name: 'Email',
-      selector: (row) => row.email,
+      name: 'Phone No',
+      selector: (row) => row.phone_number,
     },
     {
       name: 'Action',
       selector: (row) => {
         return (
           <>
-            <NavLink to={{ pathname: '/edit/email' }} state={JSON.stringify(row)}>
+            <NavLink to={{ pathname: '/edit/client' }} state={JSON.stringify(row)}>
               Edit
             </NavLink>{' '}
             <span style={{ color: 'black' }}>|</span>
@@ -160,27 +161,55 @@ const DoctorDBSEmail = () => {
     },
   ]
 
-  const validateEmail = (email) => {
-    var re = /\S+@\S+\.\S+/
-    return re.test(email)
+  const getNumber = (phone_number) => {
+    if (phone_number === undefined) {
+      return
+    }
+    var regex = /(9|04)\d{8}/g
+    var regexThree = /(3)\d{8}/g
+    var regExpZero = /^0[0-9].*$/
+
+    if (regex.test(phone_number) === true) {
+      return `+${phone_number}`
+    }
+    if (phone_number.toString()[0] === '0') {
+      // Convert number into a string
+      let numberStr = phone_number.toString()
+
+      // Replace the 0 with empty string
+      const res = numberStr.replace(numberStr[3], '')
+
+      return `+92${Number(res)}`
+    }
+    if (phone_number.toString()[0] === '3') {
+      return `+92${Number(phone_number)}`
+    } else {
+      return 0
+    }
   }
 
   const SaveRecord = async (records) => {
+    // var regexp = /^[\s()+-]*([0-9][\s()+-]*){6,20}$/
+    // var no = 433464339
+    // console.log(regexp.test(no))
+    // if (!regexp.test(no) && no.length < 0) {
+    //   alert('Wrong phone no')
+    // }
     records.forEach(async (item) => {
-      if (validateEmail(item.email) === true) {
-        if (item.email !== undefined) {
-          const { errors, data: newTodo } = await client.models.EmailList.create({
-            category_id: name,
-            name: 'No Name',
-            email: item.email,
-          })
-        }
+      if (item.phone_number !== undefined) {
+        let phone_number = getNumber(item.phone_number)
+
+        const { errors, data: newTodo } = await client.models.Client.create({
+          category_id: name,
+          name: 'No Name',
+          phone_number: phone_number,
+        })
       }
     })
 
     return true
   }
-console.log(name)
+
   const createForm = () => {
     return (
       <CCard className="mb-4" style={{ width: '60%', margin: '0 auto' }}>
@@ -257,14 +286,14 @@ console.log(name)
   )
 
   // const actionsMemo =
-
+console.log(name)
   return (
     <CRow>
       <CCol xs={12}>
         {visible == true ? createForm() : null}
         <CCard className="mb-4">
           <CCardHeader>
-            <strong>{name} Email List</strong>{' '}
+            <strong>{name} Contact List</strong>{' '}
             <CButton
               color="primary"
               style={{ float: 'right' }}
@@ -312,4 +341,4 @@ console.log(name)
   )
 }
 
-export default DoctorDBSEmail
+export default DoctorDBS
