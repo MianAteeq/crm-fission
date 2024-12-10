@@ -79,8 +79,12 @@ const AllContact = () => {
       let exists = Object.keys(sheetData[0]).filter((record) => record === 'phone_number')
       if (exists.length === 0) {
         setError('Invalid File Format')
+        console.log(inputFile.current)
         inputFile.current.value = null
-        setFile(null)
+        if (inputFile.current) {
+          inputFile.current.type = 'text'
+          inputFile.current.type = 'file'
+        }
         return
       }
       setLoading(true)
@@ -98,6 +102,7 @@ const AllContact = () => {
     }
 
     reader.readAsBinaryString(file)
+    inputFile.current.value = null
   }
   const deleteRow = async (row) => {
     const shouldRemove = confirm('are you sure you want to delete?')

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React from 'react'
 import {
   CCard,
   CCardBody,
@@ -29,8 +29,6 @@ const AllContact = () => {
   const [filterText, setFilterText] = React.useState('')
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const inputFile = useRef(null)
   const fetchTodos = async () => {
     const { data: items, errors } = await client.models.Client.list({
       limit: 20000,
@@ -76,13 +74,6 @@ const AllContact = () => {
       const sheetName = workbook.SheetNames[0]
       const sheet = workbook.Sheets[sheetName]
       const sheetData = XLSX.utils.sheet_to_json(sheet)
-      let exists = Object.keys(sheetData[0]).filter((record) => record === 'phone_number')
-      if (exists.length === 0) {
-        setError('Invalid File Format')
-        inputFile.current.value = null
-        setFile(null)
-        return
-      }
       setLoading(true)
       let isSaved = await SaveRecord(sheetData)
       console.log(isSaved)
@@ -92,7 +83,7 @@ const AllContact = () => {
         setTimeout(function () {
           fetchTodos()
         }, 2000)
-        setError('')
+
         setLoading(false)
       }
     }
@@ -107,7 +98,6 @@ const AllContact = () => {
       }
 
       const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
-      fetchTodos()
     }
   }
 
@@ -211,14 +201,14 @@ const AllContact = () => {
               type="file"
               id="exampleFormControlInput1"
               name="file"
-              ref={inputFile}
+              // value={file}
               onChange={(e) => setFile(e.target.files[0])}
               placeholder="Add File"
             />
-            <p style={{ color: 'red' }}>{error}</p>
+            {/* <p style={{ color: 'red' }}>{error}</p> */}
             <div className="d-grid gap-2 col-6 mx-auto">
               <CButton color="primary" style={{ marginTop: '4%' }} onClick={() => saveDate()}>
-                {loading ? 'Saving Data' : 'Import Data'}
+              {loading ? 'Saving Data' : 'Import Data'}
               </CButton>
             </div>
           </div>

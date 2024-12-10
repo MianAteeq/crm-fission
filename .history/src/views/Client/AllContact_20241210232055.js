@@ -79,8 +79,11 @@ const AllContact = () => {
       let exists = Object.keys(sheetData[0]).filter((record) => record === 'phone_number')
       if (exists.length === 0) {
         setError('Invalid File Format')
-        inputFile.current.value = null
-        setFile(null)
+        if (inputFile.current) {
+          inputFile.current.value = ''
+          inputFile.current.type = 'text'
+          inputFile.current.type = 'file'
+        }
         return
       }
       setLoading(true)

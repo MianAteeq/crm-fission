@@ -30,7 +30,7 @@ const AllContact = () => {
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const inputFile = useRef(null)
+  const ref = useRef()
   const fetchTodos = async () => {
     const { data: items, errors } = await client.models.Client.list({
       limit: 20000,
@@ -79,8 +79,7 @@ const AllContact = () => {
       let exists = Object.keys(sheetData[0]).filter((record) => record === 'phone_number')
       if (exists.length === 0) {
         setError('Invalid File Format')
-        inputFile.current.value = null
-        setFile(null)
+        ref.current.value = ""
         return
       }
       setLoading(true)
@@ -211,14 +210,14 @@ const AllContact = () => {
               type="file"
               id="exampleFormControlInput1"
               name="file"
-              ref={inputFile}
+              ref={ref}
               onChange={(e) => setFile(e.target.files[0])}
               placeholder="Add File"
             />
             <p style={{ color: 'red' }}>{error}</p>
             <div className="d-grid gap-2 col-6 mx-auto">
               <CButton color="primary" style={{ marginTop: '4%' }} onClick={() => saveDate()}>
-                {loading ? 'Saving Data' : 'Import Data'}
+              {loading ? 'Saving Data' : 'Import Data'}
               </CButton>
             </div>
           </div>

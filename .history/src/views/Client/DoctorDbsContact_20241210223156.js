@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React from 'react'
 import {
   CCard,
   CCardBody,
@@ -18,9 +18,9 @@ import { useState } from 'react'
 import DataTable from 'react-data-table-component'
 import * as XLSX from 'xlsx'
 import styled from 'styled-components'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation, useParams } from 'react-router-dom'
 const client = generateClient()
-const AllContact = () => {
+const DoctorDBS = () => {
   const [categories, setCategory] = useState([])
   const [filteredItems, setFilterItem] = useState([])
   const [visible, setVisible] = useState(false)
@@ -28,31 +28,72 @@ const AllContact = () => {
   const [loadingTable, setLoadingActive] = useState(true)
   const [filterText, setFilterText] = React.useState('')
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false)
+  const location = useLocation()
+
+  const [name, setName] = useState('')
+
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const inputFile = useRef(null)
+
+  const capitalizeFirstLetter = (val) => {
+    return String(val).charAt(0).toUpperCase() + String(val).slice(1)
+  }
   const fetchTodos = async () => {
     const { data: items, errors } = await client.models.Client.list({
       limit: 20000,
+      filter: {
+        category_id: {
+          beginsWith: name,
+        },
+      },
     })
-    setCategory(items)
-    setFilterItem(items.sort((a, b) => a.name.localeCompare(b.name)))
+
+    // await client.models.Client.list({
+    //   limit: 20000,
+    // })
+    setCategory(items.filter((item) => item.category_id === name))
+    setFilterItem(
+      items
+        .filter((item) => item.category_id === name)
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    )
     setLoadingActive(false)
   }
 
   useEffect(() => {
-    fetchTodos()
-  }, [])
+    let pathName = location.pathname
+      .replace('client', '')
+      .replace('/', '')
+      .replace('/', '')
+      .replace('-', ' ')
+    if (capitalizeFirstLetter(pathName) === 'Doctor bds') {
+      setName('Doctor BDS')
+    } else if (capitalizeFirstLetter(pathName) === 'Doctor mbs') {
+      setName('Doctor MBBS')
+    } else {
+      setName(capitalizeFirstLetter(pathName))
+    }
+  }, [location])
+
+  useEffect(() => {
+    if (name !== '') {
+      setLoadingActive(true)
+      fetchTodos()
+    }
+  }, [name])
+
+  console.log(name)
+
   // useEffect(() => {
   //   const sub = client.models.Client.observeQuery().subscribe({
   //     next: ({ items }) => {
-  //       setCategory([...items.sort((a, b) => a.name.localeCompare(b.name))])
-  //       setFilterItem([...items.sort((a, b) => a.name.localeCompare(b.name))])
+  //       console.log(items.filter((item) => item.category_id.toString() === name))
+  //       setCategory([...items.filter((item) => item.category_id.toString() == name.toString())])
+  //       setFilterItem([...items.filter((item) => item.category_id.toString() == name)])
   //     },
   //   })
 
   //   return () => sub.unsubscribe()
-  // }, [])
+  // }, [name])
 
   useEffect(() => {
     const filtered = categories.filter(
@@ -76,23 +117,16 @@ const AllContact = () => {
       const sheetName = workbook.SheetNames[0]
       const sheet = workbook.Sheets[sheetName]
       const sheetData = XLSX.utils.sheet_to_json(sheet)
-      let exists = Object.keys(sheetData[0]).filter((record) => record === 'phone_number')
-      if (exists.length === 0) {
-        setError('Invalid File Format')
-        inputFile.current.value = null
-        setFile(null)
-        return
-      }
-      setLoading(true)
+
       let isSaved = await SaveRecord(sheetData)
-      console.log(isSaved)
+      setLoading(true)
       if (isSaved === true) {
         setVisible(false)
         setFile(null)
         setTimeout(function () {
           fetchTodos()
         }, 2000)
-        setError('')
+
         setLoading(false)
       }
     }
@@ -107,6 +141,7 @@ const AllContact = () => {
       }
 
       const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
+
       fetchTodos()
     }
   }
@@ -188,7 +223,7 @@ const AllContact = () => {
         let phone_number = getNumber(item.phone_number)
 
         const { errors, data: newTodo } = await client.models.Client.create({
-          category_id: item['category'] ?? 'Generic',
+          category_id: name,
           name: 'No Name',
           phone_number: phone_number,
         })
@@ -211,11 +246,11 @@ const AllContact = () => {
               type="file"
               id="exampleFormControlInput1"
               name="file"
-              ref={inputFile}
+              // value={file}
               onChange={(e) => setFile(e.target.files[0])}
               placeholder="Add File"
             />
-            <p style={{ color: 'red' }}>{error}</p>
+            {/* <p style={{ color: 'red' }}>{error}</p> */}
             <div className="d-grid gap-2 col-6 mx-auto">
               <CButton color="primary" style={{ marginTop: '4%' }} onClick={() => saveDate()}>
                 {loading ? 'Saving Data' : 'Import Data'}
@@ -274,14 +309,14 @@ const AllContact = () => {
   )
 
   // const actionsMemo =
-
+  console.log(name)
   return (
     <CRow>
       <CCol xs={12}>
         {visible == true ? createForm() : null}
         <CCard className="mb-4">
           <CCardHeader>
-            <strong>All Contact List</strong>{' '}
+            <strong>{name} Contact List</strong>{' '}
             <CButton
               color="primary"
               style={{ float: 'right' }}
@@ -329,4 +364,4 @@ const AllContact = () => {
   )
 }
 
-export default AllContact
+export default DoctorDBS

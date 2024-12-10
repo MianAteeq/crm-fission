@@ -20,7 +20,7 @@ import * as XLSX from 'xlsx'
 import styled from 'styled-components'
 import { NavLink } from 'react-router-dom'
 const client = generateClient()
-const AllContact = () => {
+const AllEmail = () => {
   const [categories, setCategory] = useState([])
   const [filteredItems, setFilterItem] = useState([])
   const [visible, setVisible] = useState(false)
@@ -32,7 +32,7 @@ const AllContact = () => {
   const [error, setError] = useState('')
   const inputFile = useRef(null)
   const fetchTodos = async () => {
-    const { data: items, errors } = await client.models.Client.list({
+    const { data: items, errors } = await client.models.EmailList.list({
       limit: 20000,
     })
     setCategory(items)
@@ -44,7 +44,7 @@ const AllContact = () => {
     fetchTodos()
   }, [])
   // useEffect(() => {
-  //   const sub = client.models.Client.observeQuery().subscribe({
+  //   const sub = client.models.EmailList.observeQuery().subscribe({
   //     next: ({ items }) => {
   //       setCategory([...items.sort((a, b) => a.name.localeCompare(b.name))])
   //       setFilterItem([...items.sort((a, b) => a.name.localeCompare(b.name))])
@@ -56,8 +56,7 @@ const AllContact = () => {
 
   useEffect(() => {
     const filtered = categories.filter(
-      (item) =>
-        item.phone_number && item.phone_number.toLowerCase().includes(filterText.toLowerCase()),
+      (item) => item.email && item.email.toLowerCase().includes(filterText.toLowerCase()),
     )
     setFilterItem(filtered)
   }, [filterText])
@@ -76,11 +75,9 @@ const AllContact = () => {
       const sheetName = workbook.SheetNames[0]
       const sheet = workbook.Sheets[sheetName]
       const sheetData = XLSX.utils.sheet_to_json(sheet)
-      let exists = Object.keys(sheetData[0]).filter((record) => record === 'phone_number')
+      let exists = Object.keys(sheetData[0]).filter((record) => record === 'email')
       if (exists.length === 0) {
         setError('Invalid File Format')
-        inputFile.current.value = null
-        setFile(null)
         return
       }
       setLoading(true)
@@ -103,10 +100,10 @@ const AllContact = () => {
     const shouldRemove = confirm('are you sure you want to delete?')
     if (shouldRemove) {
       const toBeDeletedTodo = {
-        phone_number: row.phone_number,
+        email: row.email,
       }
 
-      const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
+      const { data: deletedTodo, error } = await client.models.EmailList.delete(toBeDeletedTodo)
       fetchTodos()
     }
   }
@@ -125,15 +122,15 @@ const AllContact = () => {
       selector: (row) => row.name,
     },
     {
-      name: 'Phone No',
-      selector: (row) => row.phone_number,
+      name: 'Email',
+      selector: (row) => row.email,
     },
     {
       name: 'Action',
       selector: (row) => {
         return (
           <>
-            <NavLink to={{ pathname: '/edit/client' }} state={JSON.stringify(row)}>
+            <NavLink to={{ pathname: '/edit/email' }} state={JSON.stringify(row)}>
               Edit
             </NavLink>{' '}
             <span style={{ color: 'black' }}>|</span>
@@ -175,29 +172,26 @@ const AllContact = () => {
       return 0
     }
   }
+  const validateEmail = (email) => {
+    var re = /\S+@\S+\.\S+/
+    return re.test(email)
+  }
 
   const SaveRecord = async (records) => {
-    // var regexp = /^[\s()+-]*([0-9][\s()+-]*){6,20}$/
-    // var no = 433464339
-    // console.log(regexp.test(no))
-    // if (!regexp.test(no) && no.length < 0) {
-    //   alert('Wrong phone no')
-    // }
     records.forEach(async (item) => {
-      if (item.phone_number !== undefined) {
-        let phone_number = getNumber(item.phone_number)
-
-        const { errors, data: newTodo } = await client.models.Client.create({
-          category_id: item['category'] ?? 'Generic',
-          name: 'No Name',
-          phone_number: phone_number,
-        })
+      if (validateEmail(item.email) === true) {
+        if (item.email !== undefined) {
+          const { errors, data: newTodo } = await client.models.EmailList.create({
+            category_id: item['category'] ?? 'Generic',
+            name: 'No Name',
+            email: item.email,
+          })
+        }
       }
     })
 
     return true
   }
-
   const createForm = () => {
     return (
       <CCard className="mb-4" style={{ width: '60%', margin: '0 auto' }}>
@@ -281,7 +275,7 @@ const AllContact = () => {
         {visible == true ? createForm() : null}
         <CCard className="mb-4">
           <CCardHeader>
-            <strong>All Contact List</strong>{' '}
+            <strong>All Email List</strong>{' '}
             <CButton
               color="primary"
               style={{ float: 'right' }}
@@ -329,4 +323,4 @@ const AllContact = () => {
   )
 }
 
-export default AllContact
+export default AllEmail
