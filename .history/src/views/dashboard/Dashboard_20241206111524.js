@@ -65,7 +65,7 @@ const Dashboard = () => {
   const fetchTodos = async () => {
     const { data: items, errors } = await client.models.Client.list(
       {
-        limit: 20000,
+        limit: 2000,
       },
       {
         authMode: 'userPool',
