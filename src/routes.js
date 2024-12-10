@@ -70,24 +70,31 @@ const Toasts = React.lazy(() => import('./views/notifications/toasts/Toasts'))
 
 const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 
+let records = JSON.parse(localStorage.getItem('cats'))
 
- let records=await getCats()
+let route = []
+records
+  .sort((a, b) => a.name.localeCompare(b.name))
+  .forEach((item) => {
+    let obj = {
+      path: `${item.name.replace(' ', '-').toLowerCase()}/client`,
+      name: item.name,
+      element: DoctorDBS,
+    }
 
- let route=[];
- records.sort((a, b) => a.name.localeCompare(b.name)).forEach((item)=>{
-  let obj={ path: `${item.name.replace(" ","-").toLowerCase()}/client`, name: item.name, element: DoctorDBS }
-
-  route.push(obj)
-
-
+    route.push(obj)
   })
- let email_route=[];
- records.sort((a, b) => a.name.localeCompare(b.name)).forEach((item)=>{
-  let obj={ path: `${item.name.replace(" ","-").toLowerCase()}/email`, name: item.name, element: DoctorDBSEmail }
+let email_route = []
+records
+  .sort((a, b) => a.name.localeCompare(b.name))
+  .forEach((item) => {
+    let obj = {
+      path: `${item.name.replace(' ', '-').toLowerCase()}/email`,
+      name: item.name,
+      element: DoctorDBSEmail,
+    }
 
-  email_route.push(obj)
-
-
+    email_route.push(obj)
   })
 
 const routes = [
@@ -113,5 +120,5 @@ const routes = [
   // { path: '/generic/email', name: 'Generic Email ', element: GenericEmail, exact: true },
 ]
 
-console.log((routes.concat(route)).concat(email_route))
-export default (routes.concat(route)).concat(email_route)
+console.log(routes.concat(route).concat(email_route))
+export default routes.concat(route).concat(email_route)

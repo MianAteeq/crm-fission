@@ -7,6 +7,7 @@ import './scss/style.scss'
 
 // We use those styles to show code examples, you should remove them in your application.
 import './scss/examples.scss'
+import { getCats } from './helpers/helper'
 
 // Containers
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -35,6 +36,13 @@ const App = () => {
     setColorMode(storedTheme)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    setData()
+  }, [])
+  const setData = async () => {
+
+    localStorage.setItem('cats', JSON.stringify(await getCats()))
+  }
   return (
     <HashRouter>
       <Suspense

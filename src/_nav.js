@@ -19,30 +19,36 @@ import {
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 import { getCats } from './helpers/helper'
-let records=await getCats()
+let records = JSON.parse(localStorage.getItem('cats'))
 
-let route=[{
-  component: CNavItem,
-  name: 'Add Contact',
-  to: '/add/client',
-},
-{
-  component: CNavItem,
-  name: 'All Contact',
-  to: '/all/client',
-}]
-records.sort((a, b) => a.name.localeCompare(b.name)).forEach((item)=>{
+let route = [
+  {
+    component: CNavItem,
+    name: 'Add Contact',
+    to: '/add/client',
+  },
+  {
+    component: CNavItem,
+    name: 'All Contact',
+    to: '/all/client',
+  },
+]
+records
+  .sort((a, b) => a.name.localeCompare(b.name))
+  .forEach((item) => {
+    let name = item.name === 'Doctor MBS' ? 'Doctor MBBS' : item.name
 
-  let name=item.name==="Doctor MBS"?'Doctor MBBS':item.name
+    let obj = {
+      to: `/${item.name.replace(' ', '-').toLowerCase()}/client`,
+      name: name,
+      component: CNavItem,
+    }
 
-  let obj={ to: `/${item.name.replace(" ","-").toLowerCase()}/client`, name: name,  component: CNavItem }
-
-  route.push(obj)
-
-
+    route.push(obj)
   })
 
-  let route_email=[ {
+let route_email = [
+  {
     component: CNavItem,
     name: 'Add Email',
     to: '/add/email',
@@ -51,14 +57,19 @@ records.sort((a, b) => a.name.localeCompare(b.name)).forEach((item)=>{
     component: CNavItem,
     name: 'All Email',
     to: '/all/email',
-  },]
-records.sort((a, b) => a.name.localeCompare(b.name)).forEach((item)=>{
-  let name=item.name==="Doctor MBS"?'Doctor MBBS':item.name
-  let obj={ to: `/${item.name.replace(" ","-").toLowerCase()}/email`, name: name,  component: CNavItem }
+  },
+]
+records
+  .sort((a, b) => a.name.localeCompare(b.name))
+  .forEach((item) => {
+    let name = item.name === 'Doctor MBS' ? 'Doctor MBBS' : item.name
+    let obj = {
+      to: `/${item.name.replace(' ', '-').toLowerCase()}/email`,
+      name: name,
+      component: CNavItem,
+    }
 
-  route_email.push(obj)
-
-
+    route_email.push(obj)
   })
 
 const _nav = [
