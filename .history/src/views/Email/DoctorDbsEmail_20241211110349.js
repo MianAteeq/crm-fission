@@ -188,13 +188,12 @@ const DoctorDBSEmail = () => {
 
   const SaveRecord = async (records) => {
     records.forEach(async (item, key) => {
-      let email = item.email.replace('<', '').replace('>', '')
-      if (validateEmail(email) === true) {
+      if (validateEmail(item.email) === true) {
         if (item.email !== undefined) {
           const { errors, data: newTodo } = await client.models.EmailList.create({
             category_id: name,
             name: 'No Name',
-            email: email,
+            email: item.email,
           })
         }
       }
@@ -220,7 +219,7 @@ const DoctorDBSEmail = () => {
               onChange={(e) => setFile(e.target.files[0])}
               placeholder="Add File"
             />
-            <p style={{ color: 'red' }}>{error}</p>
+             <p style={{ color: 'red' }}>{error}</p>
             <div className="d-grid gap-2 col-6 mx-auto">
               <CButton color="primary" style={{ marginTop: '4%' }} onClick={() => saveDate()}>
                 {loading ? 'Saving Data' : 'Import Data'}
