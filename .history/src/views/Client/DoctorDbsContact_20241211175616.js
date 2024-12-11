@@ -260,9 +260,7 @@ const DoctorDBS = () => {
         item.phone_number !== '' &&
         item.phone_number !== null
       ) {
-        let phone_number = getNumber(
-          item?.phone_number?.toString().replace(' ', '').replace('-', ''),
-        )
+        let phone_number = getNumber(item?.phone_number?.toString().replace(' ', '').replace('-', ''))
 
         if (phone_number.length < 13) {
           return
