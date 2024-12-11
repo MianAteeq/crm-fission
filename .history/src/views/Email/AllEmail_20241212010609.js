@@ -237,42 +237,10 @@ const AllEmail = () => {
     return (
       <CCard className="mb-4" style={{ width: '60%', margin: '0 auto' }}>
         <CCardHeader>
-          <strong>Import Data</strong>{' '}
-          <CButton
-            color="primary"
-            style={{ float: 'right' }}
-            onClick={() => {
-              setVisible(false)
-              setNumber(false)
-              setTotalRecord(0)
-              setSavedReocrd(0)
-              setFailedRecord(0)
-            }}
-          >
-            Close Model
-          </CButton>
+          <strong>Import Data</strong>
         </CCardHeader>
-
         <CForm>
           <div className="m-3">
-            {showNumber === true ? (
-              <p>
-                <span>
-                  <strong>Total Record</strong>: {totalRecord}
-                </span>{' '}
-                <br />
-                <span>
-                  <strong>Total Saved Record</strong>: {savedRecord}
-                </span>
-                <br />
-                <span>
-                  <strong>Total Record Failed</strong>: {failedRecord}
-                </span>
-              </p>
-            ) : (
-              ''
-            )}
-
             <CFormLabel htmlFor="exampleFormControlInput1">File</CFormLabel>
             <CFormInput
               type="file"
@@ -285,7 +253,7 @@ const AllEmail = () => {
             <p style={{ color: 'red' }}>{error}</p>
             <div className="d-grid gap-2 col-6 mx-auto">
               <CButton color="primary" style={{ marginTop: '4%' }} onClick={() => saveDate()}>
-                {loading === true ? 'Saving Data ...' : 'Import Data'}
+                {loading ? 'Saving Data' : 'Import Data'}
               </CButton>
             </div>
           </div>
