@@ -79,8 +79,12 @@ const DoctorDBS = () => {
     if (name !== '') {
       setLoadingActive(true)
       fetchTodos()
+
+
     }
   }, [name])
+
+
 
   useEffect(() => {
     const sub = client.models.Client.observeQuery({
@@ -103,10 +107,7 @@ const DoctorDBS = () => {
     const filteredData = categories.filter((sheet) => {
       return (
         sheet?.name?.toLowerCase().includes(filterText) ||
-        sheet?.phone_number
-          ?.replace(' ', '')
-          ?.toLowerCase()
-          .includes(filterText.replace(' ', '')?.toLowerCase()) ||
+        sheet?.phone_number?.toLowerCase().includes(filterText) ||
         sheet?.cnic?.toLowerCase().includes(filterText) ||
         sheet?.address?.toLowerCase().includes(filterText) ||
         sheet?.hospital?.toLowerCase().includes(filterText) ||
@@ -181,7 +182,7 @@ const DoctorDBS = () => {
     },
     {
       name: 'Phone No',
-      selector: (row) => row.phone_number.replace(' ', ''),
+      selector: (row) => row.phone_number.replace(' ', '').length,
     },
     {
       name: 'CNIC',
@@ -240,6 +241,7 @@ const DoctorDBS = () => {
     }
     console.log(phone_number.toString()[0])
     if (phone_number.toString()[0] == '0' || phone_number.toString()[0] === 0) {
+
       let numberStr = phone_number.toString()
 
       const res = numberStr.replace(numberStr[0], '')
@@ -260,6 +262,7 @@ const DoctorDBS = () => {
         item.phone_number !== '' &&
         item.phone_number !== null
       ) {
+
         let phone_number = getNumber(item?.phone_number?.replace(' ', '').replace('-', ''))
 
         if (phone_number.length < 13) {
@@ -355,6 +358,7 @@ const DoctorDBS = () => {
       Export
     </CButton>
   )
+
 
   return (
     <CRow>

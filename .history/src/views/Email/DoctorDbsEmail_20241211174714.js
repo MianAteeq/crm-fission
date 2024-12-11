@@ -18,9 +18,9 @@ import { useState } from 'react'
 import DataTable from 'react-data-table-component'
 import * as XLSX from 'xlsx'
 import styled from 'styled-components'
-import { NavLink, useLocation, useParams } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 const client = generateClient()
-const DoctorDBS = () => {
+const DoctorDBSEmail = () => {
   const [categories, setCategory] = useState([])
   const [filteredItems, setFilterItem] = useState([])
   const [visible, setVisible] = useState(false)
@@ -31,14 +31,10 @@ const DoctorDBS = () => {
   const location = useLocation()
   const inputFile = useRef(null)
   const [name, setName] = useState('')
-
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const capitalizeFirstLetter = (val) => {
-    return String(val).charAt(0).toUpperCase() + String(val).slice(1)
-  }
   const fetchTodos = async () => {
-    const { data: items, errors } = await client.models.Client.list({
+    const { data: items, errors } = await client.models.EmailList.list({
       limit: 20000,
       filter: {
         category_id: {
@@ -46,23 +42,28 @@ const DoctorDBS = () => {
         },
       },
     })
-
-    // await client.models.Client.list({
-    //   limit: 20000,
-    // })
     setCategory(items.filter((item) => item.category_id === name))
     setFilterItem(
       items
         .filter((item) => item.category_id === name)
         .sort((a, b) => a.name.localeCompare(b.name)),
     )
-    // await deleteAll(items)
     setLoadingActive(false)
   }
 
   useEffect(() => {
+    if (name !== ``) {
+      setLoadingActive(true)
+      fetchTodos()
+    }
+  }, [name])
+  const capitalizeFirstLetter = (val) => {
+    return String(val).charAt(0).toUpperCase() + String(val).slice(1)
+  }
+
+  useEffect(() => {
     let pathName = location.pathname
-      .replace('client', '')
+      .replace('email', '')
       .replace('/', '')
       .replace('/', '')
       .replace('-', ' ')
@@ -76,14 +77,7 @@ const DoctorDBS = () => {
   }, [location])
 
   useEffect(() => {
-    if (name !== '') {
-      setLoadingActive(true)
-      fetchTodos()
-    }
-  }, [name])
-
-  useEffect(() => {
-    const sub = client.models.Client.observeQuery({
+    const sub = client.models.EmailList.observeQuery({
       limit: 20000,
       filter: {
         category_id: {
@@ -103,10 +97,7 @@ const DoctorDBS = () => {
     const filteredData = categories.filter((sheet) => {
       return (
         sheet?.name?.toLowerCase().includes(filterText) ||
-        sheet?.phone_number
-          ?.replace(' ', '')
-          ?.toLowerCase()
-          .includes(filterText.replace(' ', '')?.toLowerCase()) ||
+        sheet?.email?.toLowerCase().includes(filterText.toLowerCase()) ||
         sheet?.cnic?.toLowerCase().includes(filterText) ||
         sheet?.address?.toLowerCase().includes(filterText) ||
         sheet?.hospital?.toLowerCase().includes(filterText) ||
@@ -130,25 +121,20 @@ const DoctorDBS = () => {
       const sheetName = workbook.SheetNames[0]
       const sheet = workbook.Sheets[sheetName]
       const sheetData = XLSX.utils.sheet_to_json(sheet)
-
-      let exists = Object.keys(sheetData[0]).filter(
-        (record) => record.replace(' ', '') === 'phone_number',
-      )
+      setLoading(true)
+      let exists = Object.keys(sheetData[0]).filter((record) => record === 'email')
       if (exists.length === 0) {
         setError('Invalid File Format')
         inputFile.current.value = null
         setFile(null)
         return
       }
-      setLoading(true)
-
       let isSaved = await SaveRecord(sheetData)
+      console.log(sheetData)
       if (isSaved === true) {
         setVisible(false)
         setFile(null)
-        // setTimeout(function () {
-        //   fetchTodos()
-        // }, 2000)
+
         setError('')
         setLoading(false)
       }
@@ -160,11 +146,10 @@ const DoctorDBS = () => {
     const shouldRemove = confirm('are you sure you want to delete?')
     if (shouldRemove) {
       const toBeDeletedTodo = {
-        phone_number: row.phone_number,
+        email: row.email,
       }
 
-      const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
-
+      const { data: deletedTodo, error } = await client.models.EmailList.delete(toBeDeletedTodo)
       fetchTodos()
     }
   }
@@ -180,8 +165,8 @@ const DoctorDBS = () => {
       selector: (row) => row.name,
     },
     {
-      name: 'Phone No',
-      selector: (row) => row.phone_number.replace(' ', ''),
+      name: 'Email',
+      selector: (row) => row?.email.toLowerCase().replace('<', '').replace('>', ''),
     },
     {
       name: 'CNIC',
@@ -191,17 +176,14 @@ const DoctorDBS = () => {
       name: 'Address',
       selector: (row) => (row.address ? row.address : 'N.A'),
     },
-    {
-      name: 'Designation',
-      selector: (row) => (row.designation ? row.designation : 'N.A'),
-    },
+
 
     {
       name: 'Action',
       selector: (row) => {
         return (
           <>
-            <NavLink to={{ pathname: '/edit/client' }} state={JSON.stringify(row)}>
+            <NavLink to={{ pathname: '/edit/email' }} state={JSON.stringify(row)}>
               Edit
             </NavLink>{' '}
             <span style={{ color: 'black' }}>|</span>
@@ -217,70 +199,32 @@ const DoctorDBS = () => {
     },
   ]
 
-  const deleteAll = async (records) => {
-    records.forEach(async (item) => {
-      if (item.phone_number.length === 12) {
-        const toBeDeletedTodo = {
-          phone_number: item.phone_number,
-        }
-
-        const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
-      }
-    })
-  }
-
-  const getNumber = (phone_number) => {
-    if (phone_number === undefined) {
-      return 0
-    }
-    var regex = /(9|04)\d{8}/g
-
-    if (regex.test(phone_number) === true) {
-      return `+${phone_number}`
-    }
-    console.log(phone_number.toString()[0])
-    if (phone_number.toString()[0] == '0' || phone_number.toString()[0] === 0) {
-      let numberStr = phone_number.toString()
-
-      const res = numberStr.replace(numberStr[0], '')
-
-      return `+92${res}`
-    }
-    if (phone_number.toString()[0] === '3') {
-      return `+92${phone_number}`
-    } else {
-      return 0
-    }
+  const validateEmail = (email) => {
+    var re = /\S+@\S+\.\S+/
+    return re.test(email)
   }
 
   const SaveRecord = async (records) => {
-    records.forEach(async (item) => {
-      if (
-        item.phone_number !== undefined &&
-        item.phone_number !== '' &&
-        item.phone_number !== null
-      ) {
-        let phone_number = getNumber(item?.phone_number?.replace(' ', '').replace('-', ''))
-
-        if (phone_number.length < 13) {
-          return
+    records.forEach(async (item, key) => {
+      let email = item.email.replace('<', '').replace('>', '').replace(' ' , '')
+      if (validateEmail(email) === true) {
+        if (item.email !== undefined) {
+          const { errors, data: newTodo } = await client.models.EmailList.create({
+            category_id: name,
+            email: email,
+            name: item.name ? item.name : 'No Name',
+            designation: item.designation ? item.designation : '',
+            cnic: item.cnic ? item.cnic : '',
+            hospital: item.hospital ? item.hospital : '',
+            address: item.address ? item.address : '',
+          })
         }
-
-        const { errors, data: newTodo } = await client.models.Client.create({
-          category_id: name,
-          name: item.name ? item.name : 'No Name',
-          designation: item.designation ? item.designation : '',
-          cnic: item.cnic ? item.cnic : '',
-          hospital: item.hospital ? item.hospital : '',
-          address: item.address ? item.address : '',
-          phone_number: phone_number,
-        })
       }
     })
 
     return true
   }
-
+  console.log(name)
   const createForm = () => {
     return (
       <CCard className="mb-4" style={{ width: '60%', margin: '0 auto' }}>
@@ -356,13 +300,15 @@ const DoctorDBS = () => {
     </CButton>
   )
 
+  // const actionsMemo =
+
   return (
     <CRow>
       <CCol xs={12}>
         {visible == true ? createForm() : null}
         <CCard className="mb-4">
           <CCardHeader>
-            <strong>{name} Contact List</strong>{' '}
+            <strong>{name} Email List</strong>{' '}
             <CButton
               color="primary"
               style={{ float: 'right' }}
@@ -410,4 +356,4 @@ const DoctorDBS = () => {
   )
 }
 
-export default DoctorDBS
+export default DoctorDBSEmail

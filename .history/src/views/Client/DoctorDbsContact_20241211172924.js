@@ -56,7 +56,7 @@ const DoctorDBS = () => {
         .filter((item) => item.category_id === name)
         .sort((a, b) => a.name.localeCompare(b.name)),
     )
-    // await deleteAll(items)
+    await deleteAll(items)
     setLoadingActive(false)
   }
 
@@ -79,8 +79,12 @@ const DoctorDBS = () => {
     if (name !== '') {
       setLoadingActive(true)
       fetchTodos()
+
+      console.log(getNumber('0322 7570010').replace(' ', ''))
     }
   }, [name])
+
+  console.log(name)
 
   useEffect(() => {
     const sub = client.models.Client.observeQuery({
@@ -103,10 +107,7 @@ const DoctorDBS = () => {
     const filteredData = categories.filter((sheet) => {
       return (
         sheet?.name?.toLowerCase().includes(filterText) ||
-        sheet?.phone_number
-          ?.replace(' ', '')
-          ?.toLowerCase()
-          .includes(filterText.replace(' ', '')?.toLowerCase()) ||
+        sheet?.phone_number?.toLowerCase().includes(filterText) ||
         sheet?.cnic?.toLowerCase().includes(filterText) ||
         sheet?.address?.toLowerCase().includes(filterText) ||
         sheet?.hospital?.toLowerCase().includes(filterText) ||
@@ -130,7 +131,7 @@ const DoctorDBS = () => {
       const sheetName = workbook.SheetNames[0]
       const sheet = workbook.Sheets[sheetName]
       const sheetData = XLSX.utils.sheet_to_json(sheet)
-
+      console.log(Object.keys(sheetData[0]))
       let exists = Object.keys(sheetData[0]).filter(
         (record) => record.replace(' ', '') === 'phone_number',
       )
@@ -165,7 +166,7 @@ const DoctorDBS = () => {
 
       const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
 
-      fetchTodos()
+      // fetchTodos()
     }
   }
 
@@ -181,7 +182,7 @@ const DoctorDBS = () => {
     },
     {
       name: 'Phone No',
-      selector: (row) => row.phone_number.replace(' ', ''),
+      selector: (row) => row.phone_number,
     },
     {
       name: 'CNIC',
@@ -219,13 +220,11 @@ const DoctorDBS = () => {
 
   const deleteAll = async (records) => {
     records.forEach(async (item) => {
-      if (item.phone_number.length === 12) {
-        const toBeDeletedTodo = {
-          phone_number: item.phone_number,
-        }
-
-        const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
+      const toBeDeletedTodo = {
+        phone_number: item.phone_number,
       }
+
+      const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
     })
   }
 
@@ -239,10 +238,13 @@ const DoctorDBS = () => {
       return `+${phone_number}`
     }
     console.log(phone_number.toString()[0])
-    if (phone_number.toString()[0] == '0' || phone_number.toString()[0] === 0) {
+    if (phone_number.toString()[0] == '0') {
+      // Convert number into a string
       let numberStr = phone_number.toString()
+      console.log(numberStr,"")
 
-      const res = numberStr.replace(numberStr[0], '')
+      // Replace the 0 with empty string
+      const res = numberStr.replace(numberStr[3], '')
 
       return `+92${res}`
     }
@@ -260,21 +262,19 @@ const DoctorDBS = () => {
         item.phone_number !== '' &&
         item.phone_number !== null
       ) {
+        // console.log( 'phone_number', item.phone_number)
         let phone_number = getNumber(item?.phone_number?.replace(' ', '').replace('-', ''))
+        console.log(phone_number, 'phone_number', item.phone_number)
 
-        if (phone_number.length < 13) {
-          return
-        }
-
-        const { errors, data: newTodo } = await client.models.Client.create({
-          category_id: name,
-          name: item.name ? item.name : 'No Name',
-          designation: item.designation ? item.designation : '',
-          cnic: item.cnic ? item.cnic : '',
-          hospital: item.hospital ? item.hospital : '',
-          address: item.address ? item.address : '',
-          phone_number: phone_number,
-        })
+        // const { errors, data: newTodo } = await client.models.Client.create({
+        //   category_id: name,
+        //   name: item.name ? item.name : 'No Name',
+        //   designation: item.designation ? item.designation : '',
+        //   cnic: item.cnic ? item.cnic : '',
+        //   hospital: item.hospital ? item.hospital : '',
+        //   address: item.address ? item.address : '',
+        //   phone_number: phone_number,
+        // })
       }
     })
 
@@ -356,6 +356,8 @@ const DoctorDBS = () => {
     </CButton>
   )
 
+  // const actionsMemo =
+  console.log(name)
   return (
     <CRow>
       <CCol xs={12}>
