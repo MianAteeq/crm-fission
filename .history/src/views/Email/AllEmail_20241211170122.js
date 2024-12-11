@@ -139,7 +139,14 @@ const AllEmail = () => {
       name: 'Address',
       selector: (row) => (row.address ? row.address : 'N.A'),
     },
-
+    {
+      name: 'Designation',
+      selector: (row) => (row.designation ? row.designation : 'N.A'),
+    },
+    {
+      name: 'Hospital',
+      selector: (row) => (row.hospital ? row.hospital : 'N.A'),
+    },
     {
       name: 'Action',
       selector: (row) => {
