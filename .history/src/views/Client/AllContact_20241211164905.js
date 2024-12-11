@@ -20,7 +20,7 @@ import * as XLSX from 'xlsx'
 import styled from 'styled-components'
 import { NavLink } from 'react-router-dom'
 const client = generateClient()
-const AllEmail = () => {
+const AllContact = () => {
   const [categories, setCategory] = useState([])
   const [filteredItems, setFilterItem] = useState([])
   const [visible, setVisible] = useState(false)
@@ -32,7 +32,7 @@ const AllEmail = () => {
   const [error, setError] = useState('')
   const inputFile = useRef(null)
   const fetchTodos = async () => {
-    const { data: items, errors } = await client.models.EmailList.list({
+    const { data: items, errors } = await client.models.Client.list({
       limit: 20000,
     })
     setCategory(items)
@@ -44,7 +44,7 @@ const AllEmail = () => {
     fetchTodos()
   }, [])
   useEffect(() => {
-    const sub = client.models.EmailList.observeQuery({ limit: 20000 }).subscribe({
+    const sub = client.models.Client.observeQuery({ limit: 20000 }).subscribe({
       next: ({ items }) => {
         setCategory([...items])
       },
@@ -57,7 +57,7 @@ const AllEmail = () => {
     const filteredData = categories.filter((sheet) => {
       return (
         sheet?.name?.toLowerCase().includes(filterText) ||
-        sheet?.email?.toLowerCase().includes(filterText) ||
+        sheet?.phone_number?.toLowerCase().includes(filterText) ||
         sheet?.cnic?.toLowerCase().includes(filterText) ||
         sheet?.address?.toLowerCase().includes(filterText) ||
         sheet?.hospital?.toLowerCase().includes(filterText) ||
@@ -81,7 +81,7 @@ const AllEmail = () => {
       const sheetName = workbook.SheetNames[0]
       const sheet = workbook.Sheets[sheetName]
       const sheetData = XLSX.utils.sheet_to_json(sheet)
-      let exists = Object.keys(sheetData[0]).filter((record) => record === 'email')
+      let exists = Object.keys(sheetData[0]).filter((record) => record === 'phone_number')
       if (exists.length === 0) {
         setError('Invalid File Format')
         inputFile.current.value = null
@@ -94,7 +94,6 @@ const AllEmail = () => {
       if (isSaved === true) {
         setVisible(false)
         setFile(null)
-
         setError('')
         setLoading(false)
       }
@@ -106,11 +105,11 @@ const AllEmail = () => {
     const shouldRemove = confirm('are you sure you want to delete?')
     if (shouldRemove) {
       const toBeDeletedTodo = {
-        email: row.email,
+        phone_number: row.phone_number,
       }
 
-      const { data: deletedTodo, error } = await client.models.EmailList.delete(toBeDeletedTodo)
-      // fetchTodos()
+      const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
+      fetchTodos()
     }
   }
 
@@ -128,16 +127,12 @@ const AllEmail = () => {
       selector: (row) => row.name,
     },
     {
-      name: 'Email',
-      selector: (row) => row.email.replace('<', '').replace('>', ''),
+      name: 'Phone No',
+      selector: (row) => row.phone_number,
     },
     {
       name: 'CNIC',
       selector: (row) => (row.cnic ? row.cnic : 'N.A'),
-    },
-    {
-      name: 'Address',
-      selector: (row) => (row.address ? row.address : 'N.A'),
     },
     {
       name: 'Designation',
@@ -148,11 +143,15 @@ const AllEmail = () => {
       selector: (row) => (row.hospital ? row.hospital : 'N.A'),
     },
     {
+      name: 'Address',
+      selector: (row) => (row.address ? row.address : 'N.A'),
+    },
+    {
       name: 'Action',
       selector: (row) => {
         return (
           <>
-            <NavLink to={{ pathname: '/edit/email' }} state={JSON.stringify(row)}>
+            <NavLink to={{ pathname: '/edit/client' }} state={JSON.stringify(row)}>
               Edit
             </NavLink>{' '}
             <span style={{ color: 'black' }}>|</span>
@@ -194,31 +193,27 @@ const AllEmail = () => {
       return 0
     }
   }
-  const validateEmail = (email) => {
-    var re = /\S+@\S+\.\S+/
-    return re.test(email)
-  }
 
   const SaveRecord = async (records) => {
     records.forEach(async (item) => {
-      let email = item.email.replace('<', '').replace('>', '')
-      if (validateEmail(email) === true) {
-        if (item.email !== undefined) {
-          const { errors, data: newTodo } = await client.models.EmailList.create({
-            category_id: item['category'] ?? 'Generic',
-            email: email,
-            name: item.name ? item.name : 'No Name',
-            designation: item.designation ? item.designation : '',
-            cnic: item.cnic ? item.cnic : '',
-            hospital: item.hospital ? item.hospital : '',
-            address: item.address ? item.address : '',
-          })
-        }
+      if (item.phone_number !== undefined) {
+        let phone_number = getNumber(item.phone_number.replace(' ', ''))
+
+        const { errors, data: newTodo } = await client.models.Client.create({
+          category_id: item['category'] ?? 'Generic',
+          name: item.name ? item.name : 'No Name',
+          designation: item.designation ? item.designation : '',
+          cnic: item.cnic ? item.cnic : '',
+          hospital: item.hospital ? item.hospital : '',
+          address: item.address ? item.address : '',
+          phone_number: phone_number,
+        })
       }
     })
 
     return true
   }
+
   const createForm = () => {
     return (
       <CCard className="mb-4" style={{ width: '60%', margin: '0 auto' }}>
@@ -302,7 +297,7 @@ const AllEmail = () => {
         {visible == true ? createForm() : null}
         <CCard className="mb-4">
           <CCardHeader>
-            <strong>All Email List</strong>{' '}
+            <strong>All Contact List</strong>{' '}
             <CButton
               color="primary"
               style={{ float: 'right' }}
@@ -350,4 +345,4 @@ const AllEmail = () => {
   )
 }
 
-export default AllEmail
+export default AllContact

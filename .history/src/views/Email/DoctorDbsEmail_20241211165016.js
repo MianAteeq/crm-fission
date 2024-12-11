@@ -18,9 +18,9 @@ import { useState } from 'react'
 import DataTable from 'react-data-table-component'
 import * as XLSX from 'xlsx'
 import styled from 'styled-components'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 const client = generateClient()
-const AllEmail = () => {
+const DoctorDBSEmail = () => {
   const [categories, setCategory] = useState([])
   const [filteredItems, setFilterItem] = useState([])
   const [visible, setVisible] = useState(false)
@@ -28,30 +28,70 @@ const AllEmail = () => {
   const [loadingTable, setLoadingActive] = useState(true)
   const [filterText, setFilterText] = React.useState('')
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false)
+  const location = useLocation()
+  const inputFile = useRef(null)
+  const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const inputFile = useRef(null)
   const fetchTodos = async () => {
     const { data: items, errors } = await client.models.EmailList.list({
       limit: 20000,
+      filter: {
+        category_id: {
+          beginsWith: name,
+        },
+      },
     })
-    setCategory(items)
-    setFilterItem(items.sort((a, b) => a.name.localeCompare(b.name)))
+    setCategory(items.filter((item) => item.category_id === name))
+    setFilterItem(
+      items
+        .filter((item) => item.category_id === name)
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    )
     setLoadingActive(false)
   }
 
   useEffect(() => {
-    fetchTodos()
-  }, [])
+    if (name !== ``) {
+      setLoadingActive(true)
+      fetchTodos()
+    }
+  }, [name])
+  const capitalizeFirstLetter = (val) => {
+    return String(val).charAt(0).toUpperCase() + String(val).slice(1)
+  }
+
   useEffect(() => {
-    const sub = client.models.EmailList.observeQuery({ limit: 20000 }).subscribe({
+    let pathName = location.pathname
+      .replace('email', '')
+      .replace('/', '')
+      .replace('/', '')
+      .replace('-', ' ')
+    if (capitalizeFirstLetter(pathName) === 'Doctor bds') {
+      setName('Doctor BDS')
+    } else if (capitalizeFirstLetter(pathName) === 'Doctor mbs') {
+      setName('Doctor MBBS')
+    } else {
+      setName(capitalizeFirstLetter(pathName))
+    }
+  }, [location])
+
+  useEffect(() => {
+    const sub = client.models.EmailList.observeQuery({
+      limit: 20000,
+      filter: {
+        category_id: {
+          beginsWith: name,
+        },
+      },
+    }).subscribe({
       next: ({ items }) => {
         setCategory([...items])
       },
     })
 
     return () => sub.unsubscribe()
-  }, [])
+  }, [name])
 
   useEffect(() => {
     const filteredData = categories.filter((sheet) => {
@@ -81,6 +121,7 @@ const AllEmail = () => {
       const sheetName = workbook.SheetNames[0]
       const sheet = workbook.Sheets[sheetName]
       const sheetData = XLSX.utils.sheet_to_json(sheet)
+      setLoading(true)
       let exists = Object.keys(sheetData[0]).filter((record) => record === 'email')
       if (exists.length === 0) {
         setError('Invalid File Format')
@@ -88,9 +129,8 @@ const AllEmail = () => {
         setFile(null)
         return
       }
-      setLoading(true)
       let isSaved = await SaveRecord(sheetData)
-      console.log(isSaved)
+      console.log(sheetData)
       if (isSaved === true) {
         setVisible(false)
         setFile(null)
@@ -110,7 +150,7 @@ const AllEmail = () => {
       }
 
       const { data: deletedTodo, error } = await client.models.EmailList.delete(toBeDeletedTodo)
-      // fetchTodos()
+      fetchTodos()
     }
   }
 
@@ -119,10 +159,7 @@ const AllEmail = () => {
       name: 'ID',
       selector: (row, i) => i + 1,
     },
-    {
-      name: 'Category',
-      selector: (row) => row.category_id,
-    },
+
     {
       name: 'Name',
       selector: (row) => row.name,
@@ -168,44 +205,18 @@ const AllEmail = () => {
     },
   ]
 
-  const getNumber = (phone_number) => {
-    if (phone_number === undefined) {
-      return
-    }
-    var regex = /(9|04)\d{8}/g
-    var regexThree = /(3)\d{8}/g
-    var regExpZero = /^0[0-9].*$/
-
-    if (regex.test(phone_number) === true) {
-      return `+${phone_number}`
-    }
-    if (phone_number.toString()[0] === '0') {
-      // Convert number into a string
-      let numberStr = phone_number.toString()
-
-      // Replace the 0 with empty string
-      const res = numberStr.replace(numberStr[3], '')
-
-      return `+92${Number(res)}`
-    }
-    if (phone_number.toString()[0] === '3') {
-      return `+92${Number(phone_number)}`
-    } else {
-      return 0
-    }
-  }
   const validateEmail = (email) => {
     var re = /\S+@\S+\.\S+/
     return re.test(email)
   }
 
   const SaveRecord = async (records) => {
-    records.forEach(async (item) => {
-      let email = item.email.replace('<', '').replace('>', '')
+    records.forEach(async (item, key) => {
+      let email = item.email.replace('<', '').replace('>', '').replace(' ' , '')
       if (validateEmail(email) === true) {
         if (item.email !== undefined) {
           const { errors, data: newTodo } = await client.models.EmailList.create({
-            category_id: item['category'] ?? 'Generic',
+            category_id: name,
             email: email,
             name: item.name ? item.name : 'No Name',
             designation: item.designation ? item.designation : '',
@@ -219,6 +230,7 @@ const AllEmail = () => {
 
     return true
   }
+  console.log(name)
   const createForm = () => {
     return (
       <CCard className="mb-4" style={{ width: '60%', margin: '0 auto' }}>
@@ -302,7 +314,7 @@ const AllEmail = () => {
         {visible == true ? createForm() : null}
         <CCard className="mb-4">
           <CCardHeader>
-            <strong>All Email List</strong>{' '}
+            <strong>{name} Email List</strong>{' '}
             <CButton
               color="primary"
               style={{ float: 'right' }}
@@ -350,4 +362,4 @@ const AllEmail = () => {
   )
 }
 
-export default AllEmail
+export default DoctorDBSEmail
