@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-key */
 import React from 'react'
 import {
   CCard,
@@ -21,12 +22,12 @@ const CFormInputWithMask = IMaskMixin(({ inputRef, ...props }) => (
   <CFormInput {...props} ref={inputRef} />
 ))
 const client = generateClient()
-const AddEmail = () => {
+const AddClient = () => {
   const [categories, setCategory] = useState([])
   const [state, setSate] = useState({
     name: '',
     categoryId: '',
-    email: '',
+    phone_no: '',
     cnic: '',
     address: '',
     hospital: '',
@@ -49,10 +50,6 @@ const AddEmail = () => {
     setID(record.toID)
     setName(record.name)
   }
-  const validateEmail = (email) => {
-    var re = /\S+@\S+\.\S+/
-    return re.test(email)
-  }
 
   const saveDate = async () => {
     if (!state.categoryId.trim()) {
@@ -67,31 +64,42 @@ const AddEmail = () => {
     } else {
       setError('')
     }
-    if (!state.email.trim()) {
+    if (!state.phone_no.trim()) {
       setError('This field is required.')
       return
     } else {
       setError('')
     }
 
-    if (validateEmail(state.email) === false) {
-      setError('Email is Invalid')
+    let phone_no = state.phone_no.replace('-', '')
+    let phoneno = phone_no.replace('+92', '')
+    if (phone_no.length < 13) {
+      setError('Phone No is Invalidd')
+    }
+    console.log(phoneno.length)
+    if (phone_no.length < 11) {
+      setError('Phone No is Invalidss')
+      return
+    }
+    var regExp = /^0[0-9].*$/
 
+    if (regExp.test(phoneno) === true) {
+      setError('Phone No is Invalids')
       return
     }
 
-    const { errors, data: newTodo } = await client.models.EmailList.create({
+    const { errors, data: newTodo } = await client.models.Client.create({
       category_id: state.categoryId,
       name: state.name,
-      email: state.email,
-      cnic: state.cnic.replace(' ', ''),
+      phone_number: phone_no,
+      cnic: state.cnic,
       designation: state.designation,
       hospital: state.hospital,
       address: state.address,
     })
     if (errors) {
       if (errors[0].errorType === 'DynamoDB:ConditionalCheckFailedException') {
-        setError('Email Already Exist')
+        setError('Phone Number Already Exist')
       } else {
         setError(errors[0].message)
       }
@@ -101,15 +109,16 @@ const AddEmail = () => {
         categoryId: '',
         phone_no: '',
       })
-      navigate('/all/email')
+      navigate('/all/client')
     }
   }
   const handleChange = (e) => {
-    let email = e.clipboardData.getData('Text')
-
+    let phone_no = e.clipboardData.getData('Text').replace('-', '')
+    let phoneno = phone_no.replace('+92', '')
+    console.log(phoneno.replace(/\b0+/g, ''))
     setSate({
       ...state,
-      email: email,
+      phone_no: '+92' + phoneno.replace(/\b0+/g, ''),
     })
   }
   const handleChangeCnic = (e) => {
@@ -124,7 +133,7 @@ const AddEmail = () => {
     return (
       <CCard className="mb-4" style={{ width: '60%', margin: '0 auto' }}>
         <CCardHeader>
-          <strong>{id ? 'Update' : 'Add'} Email</strong>
+          <strong>{id ? 'Update' : 'Add'} Client</strong>
         </CCardHeader>
         <CForm>
           <div className="m-3">
@@ -137,7 +146,11 @@ const AddEmail = () => {
               <option>Open this select menu</option>
               {categories.map((item) => {
                 // eslint-disable-next-line react/jsx-key
-                return <option value={item.toID}>{item.name}</option>
+                return (
+                  <option value={item.toID}>
+                    {item.name === 'Doctor MBS' ? 'Doctor MBBS' : item.name}
+                  </option>
+                )
               })}
             </CFormSelect>
             <p style={{ color: 'red' }}>{!state.categoryId ? error : ''}</p>
@@ -155,17 +168,15 @@ const AddEmail = () => {
             <p style={{ color: 'red' }}>{!state.name ? error : ''}</p>
           </div>
           <div className="m-3">
-            <CFormLabel htmlFor="exampleFormControlInput1">Email</CFormLabel>
-            <CFormInput
-              type="email"
-              id="exampleFormControlInput1"
-              name="email"
-              value={state.email}
-              onChange={(e) => setSate({ ...state, email: e.target.value })}
-              placeholder="Add Email"
+            <CFormLabel htmlFor="exampleFormControlInput1">Phone No</CFormLabel>
+            <CFormInputWithMask
+              mask="+{92}-0000000000"
+              value={state.phone_no}
+              onChange={(e) => setSate({ ...state, phone_no: e.target.value })}
               onPaste={handleChange}
+              placeholder="Add Phone Number"
             />
-            <p style={{ color: 'red' }}>{!state.email ? error : ''}</p>
+            <p style={{ color: 'red' }}>{error}</p>
           </div>
           <div className="m-3">
             <CFormLabel htmlFor="exampleFormControlInput1">CNIC No</CFormLabel>
@@ -177,7 +188,7 @@ const AddEmail = () => {
               onPaste={handleChangeCnic}
               placeholder="Add Cnic Number"
             />
-            {/* <p style={{ color: 'red' }}>{error}</p> */}
+            <p style={{ color: 'red' }}>{error}</p>
           </div>
           <div className="m-3">
             <CFormLabel htmlFor="exampleFormControlInput1">Hospital</CFormLabel>
@@ -189,7 +200,7 @@ const AddEmail = () => {
               onChange={(e) => setSate({ ...state, hospital: e.target.value })}
               placeholder="Add Hospital"
             />
-            {/* <p style={{ color: 'red' }}>{!state.hospital ? error : ''}</p> */}
+            <p style={{ color: 'red' }}>{!state.hospital ? error : ''}</p>
           </div>
           <div className="m-3">
             <CFormLabel htmlFor="exampleFormControlInput1">Designation</CFormLabel>
@@ -201,7 +212,7 @@ const AddEmail = () => {
               onChange={(e) => setSate({ ...state, designation: e.target.value })}
               placeholder="Add Designation"
             />
-            {/* <p style={{ color: 'red' }}>{!state.designation ? error : ''}</p> */}
+            <p style={{ color: 'red' }}>{!state.designation ? error : ''}</p>
           </div>
           <div className="m-3">
             <CFormLabel htmlFor="exampleFormControlInput1">Address</CFormLabel>
@@ -213,7 +224,7 @@ const AddEmail = () => {
               onChange={(e) => setSate({ ...state, address: e.target.value })}
               placeholder="Add Address"
             />
-            {/* <p style={{ color: 'red' }}>{!state.address ? error : ''}</p> */}
+            <p style={{ color: 'red' }}>{!state.address ? error : ''}</p>
           </div>
           <div className="m-3">
             <div className="d-grid gap-2 col-6 mx-auto">
@@ -233,4 +244,4 @@ const AddEmail = () => {
   )
 }
 
-export default AddEmail
+export default AddClient

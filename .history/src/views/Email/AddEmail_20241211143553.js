@@ -27,10 +27,6 @@ const AddEmail = () => {
     name: '',
     categoryId: '',
     email: '',
-    cnic: '',
-    address: '',
-    hospital: '',
-    designation: '',
   })
   const [id, setID] = useState('')
   const [error, setError] = useState('')
@@ -80,14 +76,20 @@ const AddEmail = () => {
       return
     }
 
+
+
     const { errors, data: newTodo } = await client.models.EmailList.create({
       category_id: state.categoryId,
       name: state.name,
       email: state.email,
-      cnic: state.cnic.replace(' ', ''),
-      designation: state.designation,
-      hospital: state.hospital,
-      address: state.address,
+      const handleChangeCnic = (e) => {
+        let cnic = e.clipboardData.getData('Text').replace('-', '')
+
+        setSate({
+          ...state,
+          cnic: cnic,
+        })
+      }
     })
     if (errors) {
       if (errors[0].errorType === 'DynamoDB:ConditionalCheckFailedException') {
@@ -165,7 +167,7 @@ const AddEmail = () => {
               placeholder="Add Email"
               onPaste={handleChange}
             />
-            <p style={{ color: 'red' }}>{!state.email ? error : ''}</p>
+           <p style={{ color: 'red' }}>{!state.email ? error : ''}</p>
           </div>
           <div className="m-3">
             <CFormLabel htmlFor="exampleFormControlInput1">CNIC No</CFormLabel>

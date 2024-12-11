@@ -164,6 +164,34 @@
               "isRequired": false,
               "attributes": []
             },
+            "cnic": {
+              "name": "cnic",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "address": {
+              "name": "address",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "hospital": {
+              "name": "hospital",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "designation": {
+              "name": "designation",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
             "email": {
               "name": "email",
               "isArray": false,
@@ -261,6 +289,34 @@
             },
             "name": {
               "name": "name",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "cnic": {
+              "name": "cnic",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "address": {
+              "name": "address",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "hospital": {
+              "name": "hospital",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "designation": {
+              "name": "designation",
               "isArray": false,
               "type": "String",
               "isRequired": false,

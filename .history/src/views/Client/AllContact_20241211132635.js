@@ -43,28 +43,23 @@ const AllContact = () => {
   useEffect(() => {
     fetchTodos()
   }, [])
-  useEffect(() => {
-    const sub = client.models.Client.observeQuery({ limit: 20000 }).subscribe({
-      next: ({ items }) => {
-        fetchTodos()
-      },
-    })
+  // useEffect(() => {
+  //   const sub = client.models.Client.observeQuery().subscribe({
+  //     next: ({ items }) => {
+  //       setCategory([...items.sort((a, b) => a.name.localeCompare(b.name))])
+  //       setFilterItem([...items.sort((a, b) => a.name.localeCompare(b.name))])
+  //     },
+  //   })
 
-    return () => sub.unsubscribe()
-  }, [])
+  //   return () => sub.unsubscribe()
+  // }, [])
 
   useEffect(() => {
-    const filteredData = categories.filter((sheet) => {
-      return (
-        sheet?.name?.toLowerCase().includes(filterText) ||
-        sheet?.phone_number?.toLowerCase().includes(filterText) ||
-        sheet?.cnic?.toLowerCase().includes(filterText) ||
-        sheet?.address?.toLowerCase().includes(filterText) ||
-        sheet?.hospital?.toLowerCase().includes(filterText) ||
-        sheet?.Designation?.toLowerCase().includes(filterText)
-      )
-    })
-    setFilterItem(filteredData)
+    const filtered = categories.filter(
+      (item) =>
+        item.phone_number && item.phone_number.toLowerCase().includes(filterText.toLowerCase()),
+    )
+    setFilterItem(filtered)
   }, [filterText])
 
   const editRecord = (record) => {
@@ -94,6 +89,9 @@ const AllContact = () => {
       if (isSaved === true) {
         setVisible(false)
         setFile(null)
+        setTimeout(function () {
+          fetchTodos()
+        }, 2000)
         setError('')
         setLoading(false)
       }
@@ -195,17 +193,19 @@ const AllContact = () => {
   }
 
   const SaveRecord = async (records) => {
+    // var regexp = /^[\s()+-]*([0-9][\s()+-]*){6,20}$/
+    // var no = 433464339
+    // console.log(regexp.test(no))
+    // if (!regexp.test(no) && no.length < 0) {
+    //   alert('Wrong phone no')
+    // }
     records.forEach(async (item) => {
       if (item.phone_number !== undefined) {
-        let phone_number = getNumber(item.phone_number.replace(' ', ''))
+        let phone_number = getNumber(item.phone_number)
 
         const { errors, data: newTodo } = await client.models.Client.create({
           category_id: item['category'] ?? 'Generic',
-          name: item.name ? item.name : 'No Name',
-          designation: item.designation ? item.designation : '',
-          cnic: item.cnic ? item.cnic : '',
-          hospital: item.hospital ? item.hospital : '',
-          address: item.address ? item.address : '',
+          name: 'No Name',
           phone_number: phone_number,
         })
       }

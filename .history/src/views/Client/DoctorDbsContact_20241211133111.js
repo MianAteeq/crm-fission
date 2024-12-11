@@ -18,9 +18,9 @@ import { useState } from 'react'
 import DataTable from 'react-data-table-component'
 import * as XLSX from 'xlsx'
 import styled from 'styled-components'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation, useParams } from 'react-router-dom'
 const client = generateClient()
-const AllContact = () => {
+const DoctorDBS = () => {
   const [categories, setCategory] = useState([])
   const [filteredItems, setFilterItem] = useState([])
   const [visible, setVisible] = useState(false)
@@ -28,43 +28,79 @@ const AllContact = () => {
   const [loadingTable, setLoadingActive] = useState(true)
   const [filterText, setFilterText] = React.useState('')
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false)
+  const location = useLocation()
+  const inputFile = useRef(null)
+  const [name, setName] = useState('')
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const inputFile = useRef(null)
+  const capitalizeFirstLetter = (val) => {
+    return String(val).charAt(0).toUpperCase() + String(val).slice(1)
+  }
   const fetchTodos = async () => {
     const { data: items, errors } = await client.models.Client.list({
       limit: 20000,
+      filter: {
+        category_id: {
+          beginsWith: name,
+        },
+      },
     })
-    setCategory(items)
-    setFilterItem(items.sort((a, b) => a.name.localeCompare(b.name)))
+
+    // await client.models.Client.list({
+    //   limit: 20000,
+    // })
+    setCategory(items.filter((item) => item.category_id === name))
+    setFilterItem(
+      items
+        .filter((item) => item.category_id === name)
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    )
     setLoadingActive(false)
   }
 
   useEffect(() => {
-    fetchTodos()
-  }, [])
-  useEffect(() => {
-    const sub = client.models.Client.observeQuery({ limit: 20000 }).subscribe({
-      next: ({ items }) => {
-        fetchTodos()
-      },
-    })
+    let pathName = location.pathname
+      .replace('client', '')
+      .replace('/', '')
+      .replace('/', '')
+      .replace('-', ' ')
+    if (capitalizeFirstLetter(pathName) === 'Doctor bds') {
+      setName('Doctor BDS')
+    } else if (capitalizeFirstLetter(pathName) === 'Doctor mbs') {
+      setName('Doctor MBBS')
+    } else {
+      setName(capitalizeFirstLetter(pathName))
+    }
+  }, [location])
 
-    return () => sub.unsubscribe()
-  }, [])
+  useEffect(() => {
+    if (name !== '') {
+      setLoadingActive(true)
+      fetchTodos()
+    }
+  }, [name])
+
+  console.log(name)
+
+  // useEffect(() => {
+  //   const sub = client.models.Client.observeQuery().subscribe({
+  //     next: ({ items }) => {
+  //       console.log(items.filter((item) => item.category_id.toString() === name))
+  //       setCategory([...items.filter((item) => item.category_id.toString() == name.toString())])
+  //       setFilterItem([...items.filter((item) => item.category_id.toString() == name)])
+  //     },
+  //   })
+
+  //   return () => sub.unsubscribe()
+  // }, [name])
 
   useEffect(() => {
-    const filteredData = categories.filter((sheet) => {
-      return (
-        sheet?.name?.toLowerCase().includes(filterText) ||
-        sheet?.phone_number?.toLowerCase().includes(filterText) ||
-        sheet?.cnic?.toLowerCase().includes(filterText) ||
-        sheet?.address?.toLowerCase().includes(filterText) ||
-        sheet?.hospital?.toLowerCase().includes(filterText) ||
-        sheet?.Designation?.toLowerCase().includes(filterText)
-      )
-    })
-    setFilterItem(filteredData)
+    const filtered = categories.filter(
+      (item) =>
+        item.phone_number && item.phone_number.toLowerCase().includes(filterText.toLowerCase()),
+    )
+    setFilterItem(filtered)
   }, [filterText])
 
   const editRecord = (record) => {
@@ -90,10 +126,12 @@ const AllContact = () => {
       }
       setLoading(true)
       let isSaved = await SaveRecord(sheetData)
-      console.log(isSaved)
       if (isSaved === true) {
         setVisible(false)
         setFile(null)
+        setTimeout(function () {
+          fetchTodos()
+        }, 2000)
         setError('')
         setLoading(false)
       }
@@ -109,6 +147,7 @@ const AllContact = () => {
       }
 
       const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
+
       fetchTodos()
     }
   }
@@ -195,17 +234,14 @@ const AllContact = () => {
   }
 
   const SaveRecord = async (records) => {
+
     records.forEach(async (item) => {
       if (item.phone_number !== undefined) {
-        let phone_number = getNumber(item.phone_number.replace(' ', ''))
+        let phone_number = getNumber(item.phone_number)
 
         const { errors, data: newTodo } = await client.models.Client.create({
-          category_id: item['category'] ?? 'Generic',
-          name: item.name ? item.name : 'No Name',
-          designation: item.designation ? item.designation : '',
-          cnic: item.cnic ? item.cnic : '',
-          hospital: item.hospital ? item.hospital : '',
-          address: item.address ? item.address : '',
+          category_id: name,
+          name: 'No Name',
           phone_number: phone_number,
         })
       }
@@ -290,14 +326,14 @@ const AllContact = () => {
   )
 
   // const actionsMemo =
-
+  console.log(name)
   return (
     <CRow>
       <CCol xs={12}>
         {visible == true ? createForm() : null}
         <CCard className="mb-4">
           <CCardHeader>
-            <strong>All Contact List</strong>{' '}
+            <strong>{name} Contact List</strong>{' '}
             <CButton
               color="primary"
               style={{ float: 'right' }}
@@ -345,4 +381,4 @@ const AllContact = () => {
   )
 }
 
-export default AllContact
+export default DoctorDBS

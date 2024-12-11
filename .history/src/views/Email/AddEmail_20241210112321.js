@@ -27,10 +27,6 @@ const AddEmail = () => {
     name: '',
     categoryId: '',
     email: '',
-    cnic: '',
-    address: '',
-    hospital: '',
-    designation: '',
   })
   const [id, setID] = useState('')
   const [error, setError] = useState('')
@@ -80,14 +76,12 @@ const AddEmail = () => {
       return
     }
 
+
+
     const { errors, data: newTodo } = await client.models.EmailList.create({
       category_id: state.categoryId,
       name: state.name,
       email: state.email,
-      cnic: state.cnic.replace(' ', ''),
-      designation: state.designation,
-      hospital: state.hospital,
-      address: state.address,
     })
     if (errors) {
       if (errors[0].errorType === 'DynamoDB:ConditionalCheckFailedException') {
@@ -110,14 +104,6 @@ const AddEmail = () => {
     setSate({
       ...state,
       email: email,
-    })
-  }
-  const handleChangeCnic = (e) => {
-    let cnic = e.clipboardData.getData('Text').replace('-', '')
-
-    setSate({
-      ...state,
-      cnic: cnic,
     })
   }
   const createForm = () => {
@@ -165,55 +151,7 @@ const AddEmail = () => {
               placeholder="Add Email"
               onPaste={handleChange}
             />
-            <p style={{ color: 'red' }}>{!state.email ? error : ''}</p>
-          </div>
-          <div className="m-3">
-            <CFormLabel htmlFor="exampleFormControlInput1">CNIC No</CFormLabel>
-            <CFormInputWithMask
-              mask="0000000000000"
-              name="cnic"
-              value={state.cnic}
-              onChange={(e) => setSate({ ...state, cnic: e.target.value })}
-              onPaste={handleChangeCnic}
-              placeholder="Add Cnic Number"
-            />
-            {/* <p style={{ color: 'red' }}>{error}</p> */}
-          </div>
-          <div className="m-3">
-            <CFormLabel htmlFor="exampleFormControlInput1">Hospital</CFormLabel>
-            <CFormInput
-              type="text"
-              id="exampleFormControlInput1"
-              name="hospital"
-              value={state.hospital}
-              onChange={(e) => setSate({ ...state, hospital: e.target.value })}
-              placeholder="Add Hospital"
-            />
-            {/* <p style={{ color: 'red' }}>{!state.hospital ? error : ''}</p> */}
-          </div>
-          <div className="m-3">
-            <CFormLabel htmlFor="exampleFormControlInput1">Designation</CFormLabel>
-            <CFormInput
-              type="text"
-              id="exampleFormControlInput1"
-              name="designation"
-              value={state.designation}
-              onChange={(e) => setSate({ ...state, designation: e.target.value })}
-              placeholder="Add Designation"
-            />
-            {/* <p style={{ color: 'red' }}>{!state.designation ? error : ''}</p> */}
-          </div>
-          <div className="m-3">
-            <CFormLabel htmlFor="exampleFormControlInput1">Address</CFormLabel>
-            <CFormInput
-              type="text"
-              id="exampleFormControlInput1"
-              name="address"
-              value={state.address}
-              onChange={(e) => setSate({ ...state, address: e.target.value })}
-              placeholder="Add Address"
-            />
-            {/* <p style={{ color: 'red' }}>{!state.address ? error : ''}</p> */}
+            <p style={{ color: 'red' }}>{error}</p>
           </div>
           <div className="m-3">
             <div className="d-grid gap-2 col-6 mx-auto">

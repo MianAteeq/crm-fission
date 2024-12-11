@@ -43,15 +43,16 @@ const AllContact = () => {
   useEffect(() => {
     fetchTodos()
   }, [])
-  useEffect(() => {
-    const sub = client.models.Client.observeQuery({ limit: 20000 }).subscribe({
-      next: ({ items }) => {
-        fetchTodos()
-      },
-    })
+  // useEffect(() => {
+  //   const sub = client.models.Client.observeQuery().subscribe({
+  //     next: ({ items }) => {
+  //       setCategory([...items.sort((a, b) => a.name.localeCompare(b.name))])
+  //       setFilterItem([...items.sort((a, b) => a.name.localeCompare(b.name))])
+  //     },
+  //   })
 
-    return () => sub.unsubscribe()
-  }, [])
+  //   return () => sub.unsubscribe()
+  // }, [])
 
   useEffect(() => {
     const filteredData = categories.filter((sheet) => {
@@ -195,9 +196,10 @@ const AllContact = () => {
   }
 
   const SaveRecord = async (records) => {
+
     records.forEach(async (item) => {
       if (item.phone_number !== undefined) {
-        let phone_number = getNumber(item.phone_number.replace(' ', ''))
+        let phone_number = getNumber(item.phone_number)
 
         const { errors, data: newTodo } = await client.models.Client.create({
           category_id: item['category'] ?? 'Generic',

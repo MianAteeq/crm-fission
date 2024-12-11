@@ -44,9 +44,9 @@ const AllContact = () => {
     fetchTodos()
   }, [])
   useEffect(() => {
-    const sub = client.models.Client.observeQuery({ limit: 20000 }).subscribe({
+    const sub = client.models.Client.observeQuery().subscribe({
       next: ({ items }) => {
-        fetchTodos()
+       fetchTodos()
       },
     })
 
@@ -195,6 +195,7 @@ const AllContact = () => {
   }
 
   const SaveRecord = async (records) => {
+
     records.forEach(async (item) => {
       if (item.phone_number !== undefined) {
         let phone_number = getNumber(item.phone_number.replace(' ', ''))

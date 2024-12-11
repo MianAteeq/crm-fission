@@ -28,10 +28,6 @@ const EditClient = (contact) => {
     name: '',
     categoryId: '',
     phone_no: '',
-    cnic: '',
-    address: '',
-    hospital: '',
-    designation: '',
   })
   const [id, setID] = useState('')
   const [error, setError] = useState('')
@@ -43,16 +39,13 @@ const EditClient = (contact) => {
   let location = useLocation()
 
   useEffect(() => {
-    let obj = JSON.parse(location.state)
+    let obj=JSON.parse(location.state)
     setSate({
       name: obj.name,
       categoryId: obj.category_id,
       phone_no: obj.phone_number,
-      cnic: obj.cnic,
-      address: obj.address,
-      hospital: obj.hospital,
-      designation: obj.designation,
     })
+
   }, [location])
   useEffect(() => {
     fetchTodos()
@@ -100,28 +93,26 @@ const EditClient = (contact) => {
       return
     }
 
-    const toBeDeletedTodo = {
-      phone_number: JSON.parse(location.state).phone_number,
-    }
+      const toBeDeletedTodo = {
+       phone_number: JSON.parse(location.state).phone_number,
+      }
 
-    const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
+      const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
 
     const { errors, data: newTodo } = await client.models.Client.create({
       category_id: state.categoryId,
       name: state.name,
       phone_number: phone_no,
-      cnic: state.cnic.replace('-', ''),
-      designation: state.designation,
-      hospital: state.hospital,
-      address: state.address,
+
     })
     if (errors) {
-      if (errors[0].errorType === 'DynamoDB:ConditionalCheckFailedException') {
+     if (errors[0].errorType === 'DynamoDB:ConditionalCheckFailedException') {
         setError('Phone Number Already Exist')
-      } else {
-        setError(errors[0].message)
+      }else{
+       setError(errors[0].message)
       }
     } else {
+
       navigate(-1)
     }
   }
@@ -134,15 +125,6 @@ const EditClient = (contact) => {
       phone_no: '+92' + phoneno.replace(/\b0+/g, ''),
     })
   }
-
-  const handleChangeCnic = (e) => {
-    let cnic = e.clipboardData.getData('Text').replace('-', '')
-
-    setSate({
-      ...state,
-      cnic: cnic,
-    })
-  }
   const createForm = () => {
     return (
       <CCard className="mb-4" style={{ width: '60%', margin: '0 auto' }}>
@@ -153,8 +135,7 @@ const EditClient = (contact) => {
           <div className="m-3">
             <CFormLabel htmlFor="exampleFormControlInput1">Client Category</CFormLabel>
             <CFormSelect
-              aria-label="Select Client Category"
-              value={state.categoryId}
+              aria-label="Select Client Category" value={state.categoryId}
               onChange={(e) => setSate({ ...state, categoryId: e.target.value })}
             >
               <option>Open this select menu</option>
@@ -187,54 +168,6 @@ const EditClient = (contact) => {
               placeholder="Add Phone Number"
             />
             <p style={{ color: 'red' }}>{error}</p>
-          </div>
-          <div className="m-3">
-            <CFormLabel htmlFor="exampleFormControlInput1">CNIC No</CFormLabel>
-            <CFormInputWithMask
-              mask="0000000000000"
-              name="cnic"
-              value={state.cnic}
-              onChange={(e) => setSate({ ...state, cnic: e.target.value })}
-              onPaste={handleChangeCnic}
-              placeholder="Add Cnic Number"
-            />
-            {/* <p style={{ color: 'red' }}>{error}</p> */}
-          </div>
-          <div className="m-3">
-            <CFormLabel htmlFor="exampleFormControlInput1">Hospital</CFormLabel>
-            <CFormInput
-              type="text"
-              id="exampleFormControlInput1"
-              name="hospital"
-              value={state.hospital}
-              onChange={(e) => setSate({ ...state, hospital: e.target.value })}
-              placeholder="Add Hospital"
-            />
-            {/* <p style={{ color: 'red' }}>{!state.hospital ? error : ''}</p> */}
-          </div>
-          <div className="m-3">
-            <CFormLabel htmlFor="exampleFormControlInput1">Designation</CFormLabel>
-            <CFormInput
-              type="text"
-              id="exampleFormControlInput1"
-              name="designation"
-              value={state.designation}
-              onChange={(e) => setSate({ ...state, designation: e.target.value })}
-              placeholder="Add Designation"
-            />
-            {/* <p style={{ color: 'red' }}>{!state.designation ? error : ''}</p> */}
-          </div>
-          <div className="m-3">
-            <CFormLabel htmlFor="exampleFormControlInput1">Address</CFormLabel>
-            <CFormInput
-              type="text"
-              id="exampleFormControlInput1"
-              name="address"
-              value={state.address}
-              onChange={(e) => setSate({ ...state, address: e.target.value })}
-              placeholder="Add Address"
-            />
-            {/* <p style={{ color: 'red' }}>{!state.address ? error : ''}</p> */}
           </div>
           <div className="m-3">
             <div className="d-grid gap-2 col-6 mx-auto">

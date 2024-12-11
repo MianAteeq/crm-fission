@@ -12,6 +12,10 @@ const schema = a.schema({
   Category: a
     .model({
       name: a.string().required(),
+      cnic: a.string(),
+      address: a.string(),
+      hospital: a.string(),
+      designation: a.string(),
       toID: a.id().required(),
       clients: a.hasMany('Client', 'category_id'),
       emails: a.hasMany('EmailList', 'category_id'),
@@ -22,10 +26,6 @@ const schema = a.schema({
       category_id: a.id(),
       phone_number: a.string().required(),
       name: a.string(),
-      cnic: a.string(),
-      address: a.string(),
-      hospital: a.string(),
-      designation: a.string(),
       email: a.string(),
       category: a.belongsTo('Category', 'category_id'),
     }).identifier(['phone_number']).authorization((allow) => [allow.authenticated('identityPool')]),
@@ -36,10 +36,6 @@ const schema = a.schema({
       category_id: a.id(),
       email: a.string().required(),
       name: a.string(),
-      cnic: a.string(),
-      address: a.string(),
-      hospital: a.string(),
-      designation: a.string(),
       category: a.belongsTo('Category', 'category_id'),
     }).identifier(['email']).authorization((allow) => [allow.authenticated('identityPool')]),
 
