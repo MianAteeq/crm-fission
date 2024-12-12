@@ -17,7 +17,6 @@ import GenericEmail from './views/Email/GenericEmail'
 import EditEmail from './views/Email/EditEmail'
 import { getCats } from './helpers/helper'
 import ViewClient from './views/Client/ViewClient'
-import ViewEmail from './views/Client/ViewEmail'
 
 // import CategoryList from './views/categories/categoryList'
 
@@ -107,8 +106,7 @@ const routes = [
 
   { path: '/add/client', name: 'Add Client', element: AddClient, exact: true },
   { path: '/edit/client', name: 'Edit Client', element: EditClient, exact: true },
-  { path: '/view/client', name: 'View Contact', element: ViewClient, exact: true },
-  { path: '/view/email', name: 'View Email', element: ViewEmail, exact: true },
+  { path: '/view/client', name: 'Edit Client', element: ViewClient, exact: true },
   { path: '/all/client', name: 'All Client', element: AllContact, exact: true },
   // { path: '/doctor/dbs/client', name: 'Doctor Dbs Client', element: DoctorDBS, exact: true },
   // { path: '/doctor/mbs/client', name: 'Doctor MBS Client', element: DoctorMbs, exact: true },

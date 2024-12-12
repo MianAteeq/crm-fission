@@ -206,14 +206,10 @@ const DoctorDBS = () => {
       selector: (row) => {
         return (
           <>
-            <NavLink to={{ pathname: '/view/client' }} state={JSON.stringify(row)}>
-              View
-            </NavLink>{' '}
-            <span style={{ color: 'black', marginRight: 5, marginLeft: 5 }}>|</span>
             <NavLink to={{ pathname: '/edit/client' }} state={JSON.stringify(row)}>
               Edit
             </NavLink>{' '}
-            <span style={{ color: 'black', marginRight: 5, marginLeft: 5 }}>|</span>
+            <span style={{ color: 'black' }}>|</span>
             <a
               onClick={() => deleteRow(row)}
               style={{ color: 'red', marginLeft: 5, cursor: 'pointer' }}

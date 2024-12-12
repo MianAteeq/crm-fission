@@ -34,7 +34,6 @@ const DoctorDBS = () => {
   const [totalRecord, setTotalRecord] = useState(0)
   const [savedRecord, setSavedReocrd] = useState(0)
   const [failedRecord, setFailedRecord] = useState(0)
-  const [failedRecords, setFailedRecords] = useState(0)
   const [name, setName] = useState('')
 
   const [loading, setLoading] = useState(false)
@@ -55,12 +54,16 @@ const DoctorDBS = () => {
     // await client.models.Client.list({
     //   limit: 20000,
     // })
-    setCategory(items)
-    setFilterItem(items.sort((a, b) => a.name.localeCompare(b.name)))
+    setCategory(items.filter((item) => item.category_id === name))
+    setFilterItem(
+      items
+        .filter((item) => item.category_id === name)
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    )
     // await deleteAll(items)
-    console.log(items.length, 'items.length')
     setLoadingActive(false)
   }
+
   useEffect(() => {
     let pathName = location.pathname
       .replace('client', '')
@@ -206,14 +209,10 @@ const DoctorDBS = () => {
       selector: (row) => {
         return (
           <>
-            <NavLink to={{ pathname: '/view/client' }} state={JSON.stringify(row)}>
-              View
-            </NavLink>{' '}
-            <span style={{ color: 'black', marginRight: 5, marginLeft: 5 }}>|</span>
             <NavLink to={{ pathname: '/edit/client' }} state={JSON.stringify(row)}>
               Edit
             </NavLink>{' '}
-            <span style={{ color: 'black', marginRight: 5, marginLeft: 5 }}>|</span>
+            <span style={{ color: 'black' }}>|</span>
             <a
               onClick={() => deleteRow(row)}
               style={{ color: 'red', marginLeft: 5, cursor: 'pointer' }}
@@ -228,13 +227,13 @@ const DoctorDBS = () => {
 
   const deleteAll = async (records) => {
     records.forEach(async (item) => {
-      // if (item.phone_number.length === 12) {
-      const toBeDeletedTodo = {
-        phone_number: item.phone_number,
-      }
+      if (item.phone_number.length === 12) {
+        const toBeDeletedTodo = {
+          phone_number: item.phone_number,
+        }
 
-      const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
-      // }
+        const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
+      }
     })
   }
 
@@ -266,10 +265,9 @@ const DoctorDBS = () => {
     var failed = 0
     var incomplete_digit = []
     var wrong_digit = []
-    var save_digit = []
-    var failed_digit = []
     var saved = 0
     records.forEach(async (item) => {
+      wrong_digit.push(item?.phone_number?.toString().replace(' ', '').replace('-', ''))
       let no = item?.phone_number?.toString().replace(' ', '').replace('-', '')
       if (no !== undefined && no !== '' && no !== null) {
         let phone_number = getNumber(
@@ -279,7 +277,7 @@ const DoctorDBS = () => {
         if (phone_number.length < 13) {
           failed++
           incomplete_digit.push(phone_number)
-          // wrong_digit.push(item?.phone_number?.toString().replace(' ', '').replace('-', ''))
+
           return
         }
 
@@ -294,31 +292,24 @@ const DoctorDBS = () => {
         })
         if (newTodo !== null) {
           saved++
-          save_digit.push(item.phone_number)
           setSavedReocrd(saved)
         } else {
           failed++
 
-          failed_digit.push(item.phone_number)
           setFailedRecord(failed)
-          setFailedRecords([failed_digit])
         }
       } else {
         failed++
         setFailedRecord(failed)
-        wrong_digit.push(item.phone_number)
+        // wrong_digit.push(item.phone_number)
       }
     })
 
     console.log(incomplete_digit, 'incomplete_digit')
-    console.log(wrong_digit, 'wrong_digit')
-    console.log(save_digit, 'save_digit')
-    console.log(failed_digit, 'failed_digit')
+    console.log(wrong_digit, 'incomplete_digit')
 
     return true
   }
-
-  console.log(failedRecords, 'failed_digit')
 
   const createForm = () => {
     return (

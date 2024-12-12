@@ -18,9 +18,9 @@ import { useState } from 'react'
 import DataTable from 'react-data-table-component'
 import * as XLSX from 'xlsx'
 import styled from 'styled-components'
-import { NavLink, useLocation, useParams } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 const client = generateClient()
-const DoctorDBS = () => {
+const AllEmail = () => {
   const [categories, setCategory] = useState([])
   const [filteredItems, setFilterItem] = useState([])
   const [visible, setVisible] = useState(false)
@@ -28,70 +28,27 @@ const DoctorDBS = () => {
   const [loadingTable, setLoadingActive] = useState(true)
   const [filterText, setFilterText] = React.useState('')
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false)
-  const location = useLocation()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const inputFile = useRef(null)
   const [showNumber, setNumber] = useState(false)
   const [totalRecord, setTotalRecord] = useState(0)
   const [savedRecord, setSavedReocrd] = useState(0)
   const [failedRecord, setFailedRecord] = useState(0)
-  const [failedRecords, setFailedRecords] = useState(0)
-  const [name, setName] = useState('')
-
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const capitalizeFirstLetter = (val) => {
-    return String(val).charAt(0).toUpperCase() + String(val).slice(1)
-  }
   const fetchTodos = async () => {
-    const { data: items, errors } = await client.models.Client.list({
+    const { data: items, errors } = await client.models.EmailList.list({
       limit: 20000,
-      filter: {
-        category_id: {
-          beginsWith: name,
-        },
-      },
     })
-
-    // await client.models.Client.list({
-    //   limit: 20000,
-    // })
     setCategory(items)
     setFilterItem(items.sort((a, b) => a.name.localeCompare(b.name)))
-    // await deleteAll(items)
-    console.log(items.length, 'items.length')
     setLoadingActive(false)
   }
-  useEffect(() => {
-    let pathName = location.pathname
-      .replace('client', '')
-      .replace('/', '')
-      .replace('/', '')
-      .replace('-', ' ')
-    if (capitalizeFirstLetter(pathName) === 'Doctor bds') {
-      setName('Doctor BDS')
-    } else if (capitalizeFirstLetter(pathName) === 'Doctor mbs') {
-      setName('Doctor MBBS')
-    } else {
-      setName(capitalizeFirstLetter(pathName))
-    }
-  }, [location])
 
   useEffect(() => {
-    if (name !== '') {
-      setLoadingActive(true)
-      fetchTodos()
-    }
-  }, [name])
-
+    fetchTodos()
+  }, [])
   useEffect(() => {
-    const sub = client.models.Client.observeQuery({
-      limit: 20000,
-      filter: {
-        category_id: {
-          beginsWith: name,
-        },
-      },
-    }).subscribe({
+    const sub = client.models.EmailList.observeQuery({ limit: 20000 }).subscribe({
       next: ({ items }) => {
         setCategory([...items])
         setFilterItem([...items])
@@ -99,7 +56,7 @@ const DoctorDBS = () => {
     })
 
     return () => sub.unsubscribe()
-  }, [name])
+  }, [])
 
   useEffect(() => {
     if (failedRecord + savedRecord === totalRecord) {
@@ -111,10 +68,7 @@ const DoctorDBS = () => {
     const filteredData = categories.filter((sheet) => {
       return (
         sheet?.name?.toLowerCase().includes(filterText) ||
-        sheet?.phone_number
-          ?.replace(' ', '')
-          ?.toLowerCase()
-          .includes(filterText.replace(' ', '')?.toLowerCase()) ||
+        sheet?.email?.toLowerCase().includes(filterText) ||
         sheet?.cnic?.toLowerCase().includes(filterText) ||
         sheet?.address?.toLowerCase().includes(filterText) ||
         sheet?.hospital?.toLowerCase().includes(filterText) ||
@@ -139,9 +93,7 @@ const DoctorDBS = () => {
       const sheet = workbook.Sheets[sheetName]
       const sheetData = XLSX.utils.sheet_to_json(sheet)
       setTotalRecord(sheetData.length)
-      let exists = Object.keys(sheetData[0]).filter(
-        (record) => record.replace(' ', '') === 'phone_number',
-      )
+      let exists = Object.keys(sheetData[0]).filter((record) => record === 'email')
       if (exists.length === 0) {
         setError('Invalid File Format')
         inputFile.current.value = null
@@ -150,8 +102,8 @@ const DoctorDBS = () => {
       }
       setLoading(true)
       setNumber(true)
-
       let isSaved = await SaveRecord(sheetData)
+
       if (isSaved === true) {
         setFile(null)
         inputFile.current.value = null
@@ -165,11 +117,10 @@ const DoctorDBS = () => {
     const shouldRemove = confirm('are you sure you want to delete?')
     if (shouldRemove) {
       const toBeDeletedTodo = {
-        phone_number: row.phone_number,
+        email: row.email,
       }
 
-      const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
-
+      const { data: deletedTodo, error } = await client.models.EmailList.delete(toBeDeletedTodo)
       // fetchTodos()
     }
   }
@@ -179,14 +130,17 @@ const DoctorDBS = () => {
       name: 'ID',
       selector: (row, i) => i + 1,
     },
-
+    {
+      name: 'Category',
+      selector: (row) => row.category_id,
+    },
     {
       name: 'Name',
       selector: (row) => row.name,
     },
     {
-      name: 'Phone No',
-      selector: (row) => row.phone_number.replace(' ', ''),
+      name: 'Email',
+      selector: (row) => row.email.toLowerCase().replace('<', '').replace('>', ''),
     },
     {
       name: 'CNIC',
@@ -196,130 +150,96 @@ const DoctorDBS = () => {
       name: 'Address',
       selector: (row) => (row.address ? row.address : 'N.A'),
     },
-    {
-      name: 'Designation',
-      selector: (row) => (row.designation ? row.designation : 'N.A'),
-    },
 
     {
       name: 'Action',
       selector: (row) => {
         return (
           <>
-            <NavLink to={{ pathname: '/view/client' }} state={JSON.stringify(row)}>
-              View
-            </NavLink>{' '}
-            <span style={{ color: 'black', marginRight: 5, marginLeft: 5 }}>|</span>
-            <NavLink to={{ pathname: '/edit/client' }} state={JSON.stringify(row)}>
-              Edit
-            </NavLink>{' '}
-            <span style={{ color: 'black', marginRight: 5, marginLeft: 5 }}>|</span>
-            <a
-              onClick={() => deleteRow(row)}
-              style={{ color: 'red', marginLeft: 5, cursor: 'pointer' }}
-            >
-              Delete
-            </a>
+           <NavLink to={{ pathname: '/view/email' }} state={JSON.stringify(row)}>
+                         View
+                       </NavLink>{' '}
+                       <span style={{ color: 'black', marginRight: 5 , marginLeft: 5 }}>|</span>
+                       <NavLink to={{ pathname: '/edit/email' }} state={JSON.stringify(row)}>
+                         Edit
+                       </NavLink>{' '}
+                       <span style={{ color: 'black', marginRight: 5 , marginLeft: 5 }}>|</span>
+                       <a
+                         onClick={() => deleteRow(row)}
+                         style={{ color: 'red', marginLeft: 5, cursor: 'pointer' }}
+                       >
+                         Delete
+                       </a>
           </>
         )
       },
     },
   ]
 
-  const deleteAll = async (records) => {
-    records.forEach(async (item) => {
-      // if (item.phone_number.length === 12) {
-      const toBeDeletedTodo = {
-        phone_number: item.phone_number,
-      }
-
-      const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
-      // }
-    })
-  }
-
   const getNumber = (phone_number) => {
     if (phone_number === undefined) {
-      return 0
+      return
     }
     var regex = /(9|04)\d{8}/g
+    var regexThree = /(3)\d{8}/g
+    var regExpZero = /^0[0-9].*$/
 
     if (regex.test(phone_number) === true) {
       return `+${phone_number}`
     }
-    console.log(phone_number.toString()[0])
-    if (phone_number.toString()[0] == '0' || phone_number.toString()[0] === 0) {
+    if (phone_number.toString()[0] === '0') {
+      // Convert number into a string
       let numberStr = phone_number.toString()
 
-      const res = numberStr.replace(numberStr[0], '')
+      // Replace the 0 with empty string
+      const res = numberStr.replace(numberStr[3], '')
 
-      return `+92${res}`
+      return `+92${Number(res)}`
     }
     if (phone_number.toString()[0] === '3') {
-      return `+92${phone_number}`
+      return `+92${Number(phone_number)}`
     } else {
       return 0
     }
   }
+  const validateEmail = (email) => {
+    var re = /\S+@\S+\.\S+/
+    return re.test(email)
+  }
 
   const SaveRecord = async (records) => {
     var failed = 0
-    var incomplete_digit = []
-    var wrong_digit = []
-    var save_digit = []
-    var failed_digit = []
     var saved = 0
     records.forEach(async (item) => {
-      let no = item?.phone_number?.toString().replace(' ', '').replace('-', '')
-      if (no !== undefined && no !== '' && no !== null) {
-        let phone_number = getNumber(
-          item?.phone_number?.toString().replace(' ', '').replace('-', ''),
-        )
+      let email = item?.email?.replace('<', '').replace('>', '')
+      if (validateEmail(email) === true) {
+        if (item.email !== undefined) {
+          const { errors, data: newTodo } = await client.models.EmailList.create({
+            category_id: item['category'] ?? 'Generic',
+            email: email,
+            name: item.name ? item.name : 'No Name',
+            designation: item.designation ? item.designation : '',
+            cnic: item.cnic ? item.cnic : '',
+            hospital: item.hospital ? item.hospital : '',
+            address: item.address ? item.address : '',
+          })
+          if (newTodo !== null) {
+            saved++
+            setSavedReocrd(saved)
+          } else {
+            failed++
 
-        if (phone_number.length < 13) {
-          failed++
-          incomplete_digit.push(phone_number)
-          // wrong_digit.push(item?.phone_number?.toString().replace(' ', '').replace('-', ''))
-          return
-        }
-
-        const { errors, data: newTodo } = await client.models.Client.create({
-          category_id: name,
-          name: item.name ? item.name : 'No Name',
-          designation: item.designation ? item.designation : '',
-          cnic: item.cnic ? item.cnic : '',
-          hospital: item.hospital ? item.hospital : '',
-          address: item.address ? item.address : '',
-          phone_number: phone_number,
-        })
-        if (newTodo !== null) {
-          saved++
-          save_digit.push(item.phone_number)
-          setSavedReocrd(saved)
-        } else {
-          failed++
-
-          failed_digit.push(item.phone_number)
-          setFailedRecord(failed)
-          setFailedRecords([failed_digit])
+            setFailedRecord(failed)
+          }
         }
       } else {
         failed++
         setFailedRecord(failed)
-        wrong_digit.push(item.phone_number)
       }
     })
 
-    console.log(incomplete_digit, 'incomplete_digit')
-    console.log(wrong_digit, 'wrong_digit')
-    console.log(save_digit, 'save_digit')
-    console.log(failed_digit, 'failed_digit')
-
     return true
   }
-
-  console.log(failedRecords, 'failed_digit')
-
   const createForm = () => {
     return (
       <CCard className="mb-4" style={{ width: '60%', margin: '0 auto' }}>
@@ -427,13 +347,15 @@ const DoctorDBS = () => {
     </CButton>
   )
 
+  // const actionsMemo =
+
   return (
     <CRow>
       <CCol xs={12}>
         {visible == true ? createForm() : null}
         <CCard className="mb-4">
           <CCardHeader>
-            <strong>{name} Contact List</strong>{' '}
+            <strong>All Email List</strong>{' '}
             <CButton
               color="primary"
               style={{ float: 'right' }}
@@ -481,4 +403,4 @@ const DoctorDBS = () => {
   )
 }
 
-export default DoctorDBS
+export default AllEmail
