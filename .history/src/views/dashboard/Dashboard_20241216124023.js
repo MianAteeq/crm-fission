@@ -76,20 +76,9 @@ const Dashboard = () => {
 
     setCategory(items)
   }
-  useEffect(() => {
-    const sub = client.models.EmailList.observeQuery({ limit: 50000 }).subscribe({
-      next: ({ items }) => {
-        setEmail([...items])
-        // setFilterItem([...items])
-      },
-    })
-
-    return () => sub.unsubscribe()
-  }, [])
 
   useEffect(() => {
     fetchTodos()
-    // fetchEmail()
   }, [])
 
   return (
@@ -131,15 +120,6 @@ const Dashboard = () => {
             value={categories.filter((item) => item.category_id === 'Patient').length}
           />
         </CCol>
-        <CCol xs={4}>
-          <CWidgetStatsF
-            className="mb-3"
-            color="primary"
-            icon={<CIcon icon={cilContact} height={24} />}
-            title="Total Contact (Nursing)"
-            value={categories.filter((item) => item.category_id === 'Nursing').length}
-          />
-        </CCol>
       </CRow>
       <CRow>
         <CCol xs={4}>
@@ -147,7 +127,7 @@ const Dashboard = () => {
             className="mb-3"
             color="primary"
             icon={<CIcon icon={cibGmail} height={30} />}
-            title="Total Email"
+            title="Total Contact"
             value={emails.length}
           />
         </CCol>
@@ -156,7 +136,7 @@ const Dashboard = () => {
             className="mb-3"
             color="primary"
             icon={<CIcon icon={cibGmail} height={24} />}
-            title="Email (MBS)"
+            title="Contact (MBS)"
             value={emails.filter((item) => item.category_id === 'Doctor MBS').length}
           />
         </CCol>
@@ -165,7 +145,7 @@ const Dashboard = () => {
             className="mb-3"
             color="primary"
             icon={<CIcon icon={cibGmail} height={24} />}
-            title="Total Email (BDS)"
+            title="Total Contact (BDS)"
             value={emails.filter((item) => item.category_id === 'Doctor BDS').length}
           />
         </CCol>
@@ -174,17 +154,8 @@ const Dashboard = () => {
             className="mb-3"
             color="primary"
             icon={<CIcon icon={cibGmail} height={24} />}
-            title="Total Email (Patient)"
+            title="Total Contact (Patient)"
             value={emails.filter((item) => item.category_id === 'Patient').length}
-          />
-        </CCol>
-        <CCol xs={4}>
-          <CWidgetStatsF
-            className="mb-3"
-            color="primary"
-            icon={<CIcon icon={cibGmail} height={24} />}
-            title="Total Email (Nursing)"
-            value={emails.filter((item) => item.category_id === 'Nursing').length}
           />
         </CCol>
       </CRow>

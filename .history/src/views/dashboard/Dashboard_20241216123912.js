@@ -73,23 +73,20 @@ const Dashboard = () => {
         authMode: 'userPool',
       },
     )
-
-    setCategory(items)
-  }
-  useEffect(() => {
-    const sub = client.models.EmailList.observeQuery({ limit: 50000 }).subscribe({
-      next: ({ items }) => {
-        setEmail([...items])
-        // setFilterItem([...items])
+    const { data: records, error_s } = await client.models.EmailList.list(
+      {
+        limit: 20000,
       },
-    })
-
-    return () => sub.unsubscribe()
-  }, [])
+      {
+        authMode: 'userPool',
+      },
+    )
+    setCategory(items)
+    setEmail(records)
+  }
 
   useEffect(() => {
     fetchTodos()
-    // fetchEmail()
   }, [])
 
   return (
@@ -131,15 +128,6 @@ const Dashboard = () => {
             value={categories.filter((item) => item.category_id === 'Patient').length}
           />
         </CCol>
-        <CCol xs={4}>
-          <CWidgetStatsF
-            className="mb-3"
-            color="primary"
-            icon={<CIcon icon={cilContact} height={24} />}
-            title="Total Contact (Nursing)"
-            value={categories.filter((item) => item.category_id === 'Nursing').length}
-          />
-        </CCol>
       </CRow>
       <CRow>
         <CCol xs={4}>
@@ -147,8 +135,8 @@ const Dashboard = () => {
             className="mb-3"
             color="primary"
             icon={<CIcon icon={cibGmail} height={30} />}
-            title="Total Email"
-            value={emails.length}
+            title="Total Contact"
+            value={email.length}
           />
         </CCol>
         <CCol xs={4}>
@@ -156,8 +144,8 @@ const Dashboard = () => {
             className="mb-3"
             color="primary"
             icon={<CIcon icon={cibGmail} height={24} />}
-            title="Email (MBS)"
-            value={emails.filter((item) => item.category_id === 'Doctor MBS').length}
+            title="Contact (MBS)"
+            value={email.filter((item) => item.category_id === 'Doctor MBS').length}
           />
         </CCol>
         <CCol xs={4}>
@@ -165,8 +153,8 @@ const Dashboard = () => {
             className="mb-3"
             color="primary"
             icon={<CIcon icon={cibGmail} height={24} />}
-            title="Total Email (BDS)"
-            value={emails.filter((item) => item.category_id === 'Doctor BDS').length}
+            title="Total Contact (BDS)"
+            value={email.filter((item) => item.category_id === 'Doctor BDS').length}
           />
         </CCol>
         <CCol xs={4}>
@@ -174,17 +162,8 @@ const Dashboard = () => {
             className="mb-3"
             color="primary"
             icon={<CIcon icon={cibGmail} height={24} />}
-            title="Total Email (Patient)"
-            value={emails.filter((item) => item.category_id === 'Patient').length}
-          />
-        </CCol>
-        <CCol xs={4}>
-          <CWidgetStatsF
-            className="mb-3"
-            color="primary"
-            icon={<CIcon icon={cibGmail} height={24} />}
-            title="Total Email (Nursing)"
-            value={emails.filter((item) => item.category_id === 'Nursing').length}
+            title="Total Contact (Patient)"
+            value={email.filter((item) => item.category_id === 'Patient').length}
           />
         </CCol>
       </CRow>

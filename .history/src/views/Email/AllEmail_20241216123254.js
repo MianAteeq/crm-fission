@@ -20,7 +20,7 @@ import * as XLSX from 'xlsx'
 import styled from 'styled-components'
 import { NavLink } from 'react-router-dom'
 const client = generateClient()
-const AllContact = () => {
+const AllEmail = () => {
   const [categories, setCategory] = useState([])
   const [filteredItems, setFilterItem] = useState([])
   const [visible, setVisible] = useState(false)
@@ -35,9 +35,8 @@ const AllContact = () => {
   const [totalRecord, setTotalRecord] = useState(0)
   const [savedRecord, setSavedReocrd] = useState(0)
   const [failedRecord, setFailedRecord] = useState(0)
-  const [name, setName] = useState('')
   const fetchTodos = async () => {
-    const { data: items, errors } = await client.models.Client.list({
+    const { data: items, errors } = await client.models.EmailList.list({
       limit: 20000,
     })
     setCategory(items)
@@ -49,7 +48,7 @@ const AllContact = () => {
     fetchTodos()
   }, [])
   useEffect(() => {
-    const sub = client.models.Client.observeQuery({ limit: 20000 }).subscribe({
+    const sub = client.models.EmailList.observeQuery({ limit: 20000 }).subscribe({
       next: ({ items }) => {
         setCategory([...items])
         setFilterItem([...items])
@@ -69,13 +68,10 @@ const AllContact = () => {
     const filteredData = categories.filter((sheet) => {
       return (
         sheet?.name?.toLowerCase().includes(filterText.toLowerCase()) ||
-        sheet?.phone_number
-          ?.replace(' ', '')
-          ?.toLowerCase()
-          .includes(filterText.replace(' ', '')?.toLowerCase()) ||
+        sheet?.email?.toLowerCase().includes(filterText.toLowerCase()) ||
         sheet?.cnic?.toLowerCase().includes(filterText.toLowerCase()) ||
-        sheet?.address?.toLowerCase().includes(filterText.toLowerCase()) ||
         sheet?.working_at?.toLowerCase().includes(filterText.toLowerCase()) ||
+        sheet?.address?.toLowerCase().includes(filterText.toLowerCase()) ||
         sheet?.hospital?.toLowerCase().includes(filterText.toLowerCase()) ||
         sheet?.Designation?.toLowerCase().includes(filterText.toLowerCase())
       )
@@ -83,6 +79,11 @@ const AllContact = () => {
     setFilterItem(filteredData)
   }, [filterText])
 
+  const editRecord = (record) => {
+    setVisible(true)
+    setID(record.toID)
+    setName(record.name)
+  }
 
   const saveDate = async () => {
     const reader = new FileReader()
@@ -93,7 +94,7 @@ const AllContact = () => {
       const sheet = workbook.Sheets[sheetName]
       const sheetData = XLSX.utils.sheet_to_json(sheet)
       setTotalRecord(sheetData.length)
-      let exists = Object.keys(sheetData[0]).filter((record) => record === 'phone_number')
+      let exists = Object.keys(sheetData[0]).filter((record) => record === 'email')
       if (exists.length === 0) {
         setError('Invalid File Format')
         inputFile.current.value = null
@@ -117,10 +118,10 @@ const AllContact = () => {
     const shouldRemove = confirm('are you sure you want to delete?')
     if (shouldRemove) {
       const toBeDeletedTodo = {
-        phone_number: row.phone_number,
+        email: row.email,
       }
 
-      const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
+      const { data: deletedTodo, error } = await client.models.EmailList.delete(toBeDeletedTodo)
       // fetchTodos()
     }
   }
@@ -139,25 +140,24 @@ const AllContact = () => {
       selector: (row) => row.name,
     },
     {
-      name: 'Phone No',
-      selector: (row) => row.phone_number,
+      name: 'Email',
+      selector: (row) => row.email.toLowerCase().replace('<', '').replace('>', ''),
     },
     {
       name: 'CNIC',
       selector: (row) => (row.cnic ? row.cnic : 'N.A'),
     },
 
-
     {
       name: 'Action',
       selector: (row) => {
         return (
           <>
-            <NavLink to={{ pathname: '/view/client' }} state={JSON.stringify(row)}>
+            <NavLink to={{ pathname: '/view/email' }} state={JSON.stringify(row)}>
               View
             </NavLink>{' '}
             <span style={{ color: 'black', marginRight: 5, marginLeft: 5 }}>|</span>
-            <NavLink to={{ pathname: '/edit/client' }} state={JSON.stringify(row)}>
+            <NavLink to={{ pathname: '/edit/email' }} state={JSON.stringify(row)}>
               Edit
             </NavLink>{' '}
             <span style={{ color: 'black', marginRight: 5, marginLeft: 5 }}>|</span>
@@ -175,56 +175,59 @@ const AllContact = () => {
 
   const getNumber = (phone_number) => {
     if (phone_number === undefined) {
-      return 0
+      return
     }
     var regex = /(9|04)\d{8}/g
+    var regexThree = /(3)\d{8}/g
+    var regExpZero = /^0[0-9].*$/
 
     if (regex.test(phone_number) === true) {
       return `+${phone_number}`
     }
-
-    if (phone_number.toString()[0] == '0' || phone_number.toString()[0] === 0) {
+    if (phone_number.toString()[0] === '0') {
+      // Convert number into a string
       let numberStr = phone_number.toString()
 
-      const res = numberStr.replace(numberStr[0], '')
+      // Replace the 0 with empty string
+      const res = numberStr.replace(numberStr[3], '')
 
-      return `+92${res}`
+      return `+92${Number(res)}`
     }
     if (phone_number.toString()[0] === '3') {
-      return `+92${phone_number}`
+      return `+92${Number(phone_number)}`
     } else {
       return 0
     }
+  }
+  const validateEmail = (email) => {
+    var re = /\S+@\S+\.\S+/
+    return re.test(email)
   }
 
   const SaveRecord = async (records) => {
     var failed = 0
     var saved = 0
     records.forEach(async (item) => {
-      if (item.phone_number !== undefined) {
-        let phone_number = getNumber(
-          item?.phone_number?.toString().replace(' ', '').replace('-', ''),
-        )
-        if (phone_number.length < 13) {
-          failed++
-          return
-        }
-        const { errors, data: newTodo } = await client.models.Client.create({
-          category_id: item['category'] ?? 'Generic',
-          name: item.name ? item.name : 'No Name',
-          designation: item.designation ? item.designation : '',
-          cnic: item.cnic ? item.cnic : '',
-          hospital: item.hospital ? item.hospital : '',
-          address: item.address ? item.address : '',
-          phone_number: phone_number,
-        })
-        if (newTodo !== null) {
-          saved++
-          setSavedReocrd(saved)
-        } else {
-          failed++
+      let email = item?.email?.replace('<', '').replace('>', '')
+      if (validateEmail(email) === true) {
+        if (item.email !== undefined) {
+          const { errors, data: newTodo } = await client.models.EmailList.create({
+            category_id: item['category'] ?? 'Generic',
+            email: email,
+            name: item.name ? item.name : 'No Name',
+            designation: item.designation ? item.designation : '',
+            cnic: item.cnic ? item.cnic : '',
+            hospital: item.hospital ? item.hospital : '',
+            address: item.address ? item.address : '',
+          })
+          if (newTodo !== null) {
+            saved++
+            setSavedReocrd(saved)
+          } else {
+            failed++
 
-          setFailedRecord(failed)
+            setFailedRecord(failed)
+          }
         }
       } else {
         failed++
@@ -234,7 +237,6 @@ const AllContact = () => {
 
     return true
   }
-
   const createForm = () => {
     return (
       <CCard className="mb-4" style={{ width: '60%', margin: '0 auto' }}>
@@ -350,7 +352,7 @@ const AllContact = () => {
         {visible == true ? createForm() : null}
         <CCard className="mb-4">
           <CCardHeader>
-            <strong>All Contact List</strong>{' '}
+            <strong>All Email List</strong>{' '}
             <CButton
               color="primary"
               style={{ float: 'right' }}
@@ -398,4 +400,4 @@ const AllContact = () => {
   )
 }
 
-export default AllContact
+export default AllEmail

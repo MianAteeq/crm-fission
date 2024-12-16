@@ -46,7 +46,6 @@ import {
   cilChartPie,
   cilArrowRight,
   cilContact,
-  cibGmail,
 } from '@coreui/icons'
 
 import avatar1 from 'src/assets/images/avatars/1.jpg'
@@ -63,7 +62,6 @@ import { generateClient } from 'aws-amplify/data'
 const client = generateClient()
 const Dashboard = () => {
   const [categories, setCategory] = useState([])
-  const [emails, setEmail] = useState([])
   const fetchTodos = async () => {
     const { data: items, errors } = await client.models.Client.list(
       {
@@ -73,23 +71,20 @@ const Dashboard = () => {
         authMode: 'userPool',
       },
     )
-
-    setCategory(items)
-  }
-  useEffect(() => {
-    const sub = client.models.EmailList.observeQuery({ limit: 50000 }).subscribe({
-      next: ({ items }) => {
-        setEmail([...items])
-        // setFilterItem([...items])
+    const { data: records, error_s } = await client.models.EmailList.list(
+      {
+        limit: 20000,
       },
-    })
-
-    return () => sub.unsubscribe()
-  }, [])
+      {
+        authMode: 'userPool',
+      },
+    )
+    setCategory(items)
+    setEmail(items)
+  }
 
   useEffect(() => {
     fetchTodos()
-    // fetchEmail()
   }, [])
 
   return (
@@ -129,62 +124,6 @@ const Dashboard = () => {
             icon={<CIcon icon={cilContact} height={24} />}
             title="Total Contact (Patient)"
             value={categories.filter((item) => item.category_id === 'Patient').length}
-          />
-        </CCol>
-        <CCol xs={4}>
-          <CWidgetStatsF
-            className="mb-3"
-            color="primary"
-            icon={<CIcon icon={cilContact} height={24} />}
-            title="Total Contact (Nursing)"
-            value={categories.filter((item) => item.category_id === 'Nursing').length}
-          />
-        </CCol>
-      </CRow>
-      <CRow>
-        <CCol xs={4}>
-          <CWidgetStatsF
-            className="mb-3"
-            color="primary"
-            icon={<CIcon icon={cibGmail} height={30} />}
-            title="Total Email"
-            value={emails.length}
-          />
-        </CCol>
-        <CCol xs={4}>
-          <CWidgetStatsF
-            className="mb-3"
-            color="primary"
-            icon={<CIcon icon={cibGmail} height={24} />}
-            title="Email (MBS)"
-            value={emails.filter((item) => item.category_id === 'Doctor MBS').length}
-          />
-        </CCol>
-        <CCol xs={4}>
-          <CWidgetStatsF
-            className="mb-3"
-            color="primary"
-            icon={<CIcon icon={cibGmail} height={24} />}
-            title="Total Email (BDS)"
-            value={emails.filter((item) => item.category_id === 'Doctor BDS').length}
-          />
-        </CCol>
-        <CCol xs={4}>
-          <CWidgetStatsF
-            className="mb-3"
-            color="primary"
-            icon={<CIcon icon={cibGmail} height={24} />}
-            title="Total Email (Patient)"
-            value={emails.filter((item) => item.category_id === 'Patient').length}
-          />
-        </CCol>
-        <CCol xs={4}>
-          <CWidgetStatsF
-            className="mb-3"
-            color="primary"
-            icon={<CIcon icon={cibGmail} height={24} />}
-            title="Total Email (Nursing)"
-            value={emails.filter((item) => item.category_id === 'Nursing').length}
           />
         </CCol>
       </CRow>

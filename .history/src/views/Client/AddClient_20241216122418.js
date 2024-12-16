@@ -107,12 +107,9 @@ const AddClient = () => {
       cnic: state.cnic.replace(' ', ''),
       designation: state.designation,
       hospital: state.hospital,
-      working_at: state.working_at,
       address: state.address,
     })
-    if (state.email.trim() !== '') {
-      await saveEmailDate(state)
-    }
+    await saveEmailDate(state)
     if (errors) {
       console.log(errors[0].errorType)
       if (errors[0].errorType === 'DynamoDB:ConditionalCheckFailedException') {

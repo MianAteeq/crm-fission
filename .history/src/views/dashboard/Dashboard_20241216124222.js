@@ -76,20 +76,22 @@ const Dashboard = () => {
 
     setCategory(items)
   }
-  useEffect(() => {
-    const sub = client.models.EmailList.observeQuery({ limit: 50000 }).subscribe({
-      next: ({ items }) => {
-        setEmail([...items])
-        // setFilterItem([...items])
+  const fetchEmail = async () => {
+    const { data: items, errors } = await client.models.EmailList.list(
+      {
+        limit: 20000,
       },
-    })
+      {
+        authMode: 'userPool',
+      },
+    )
 
-    return () => sub.unsubscribe()
-  }, [])
+    setEmail(items)
+  }
 
   useEffect(() => {
     fetchTodos()
-    // fetchEmail()
+    fetchEmail()
   }, [])
 
   return (
@@ -137,7 +139,7 @@ const Dashboard = () => {
             color="primary"
             icon={<CIcon icon={cilContact} height={24} />}
             title="Total Contact (Nursing)"
-            value={categories.filter((item) => item.category_id === 'Nursing').length}
+            value={categories.filter((item) => item.category_id === 'Patient').length}
           />
         </CCol>
       </CRow>

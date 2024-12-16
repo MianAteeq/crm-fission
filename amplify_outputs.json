@@ -185,6 +185,13 @@
               "isRequired": false,
               "attributes": []
             },
+            "working_at": {
+              "name": "working_at",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
             "designation": {
               "name": "designation",
               "isArray": false,
@@ -303,6 +310,13 @@
             },
             "address": {
               "name": "address",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "working_at": {
+              "name": "working_at",
               "isArray": false,
               "type": "String",
               "isRequired": false,

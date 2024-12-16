@@ -12,7 +12,7 @@ import {
   CFormSelect,
 } from '@coreui/react'
 import { DocsComponents, DocsExample } from 'src/components'
-import { Spinner, Table } from 'flowbite-react'
+import { Table } from 'flowbite-react'
 import { generateClient } from 'aws-amplify/data'
 import { useEffect } from 'react'
 import { useState } from 'react'
@@ -33,13 +33,11 @@ const AddClient = () => {
     hospital: '',
     designation: '',
     working_at: '',
-    email: '',
   })
   const [id, setID] = useState('')
   const [loading, setLoading] = useState(false)
   const [showHospital, setShowHospital] = useState(false)
   const [error, setError] = useState('')
-  const [email_error, setEmailError] = useState('')
   const navigate = useNavigate()
   const fetchTodos = async () => {
     const { data: items, errors } = await client.models.Category.list()
@@ -50,10 +48,12 @@ const AddClient = () => {
     fetchTodos()
   }, [])
 
-  const validateEmail = (email) => {
-    var re = /\S+@\S+\.\S+/
-    return re.test(email)
+  const editRecord = (record) => {
+    setVisible(true)
+    setID(record.toID)
+    setName(record.name)
   }
+
   const saveDate = async () => {
     if (!state.categoryId.trim()) {
       setError('This field is required.')
@@ -90,64 +90,30 @@ const AddClient = () => {
       setError('Phone No is Invalids')
       return
     }
-    if (state.email.trim() !== '') {
-      if (validateEmail(state.email) === false) {
-        setEmailError('Email is Invalid')
-        return
-      } else {
-        setEmailError('')
-      }
-    }
 
-    setLoading(true)
     const { errors, data: newTodo } = await client.models.Client.create({
       category_id: state.categoryId,
       name: state.name,
       phone_number: phone_no,
-      cnic: state.cnic.replace(' ', ''),
+      cnic: state.cnic.replace(' ' , ''),
       designation: state.designation,
       hospital: state.hospital,
-      working_at: state.working_at,
       address: state.address,
     })
-    if (state.email.trim() !== '') {
-      await saveEmailDate(state)
-    }
     if (errors) {
-      console.log(errors[0].errorType)
       if (errors[0].errorType === 'DynamoDB:ConditionalCheckFailedException') {
         setError('Phone Number Already Exist')
-        setLoading(false)
       } else {
         setError(errors[0].message)
-        setLoading(false)
       }
     } else {
       setSate({
         name: '',
         categoryId: '',
         phone_no: '',
-        cnic: '',
-        address: '',
-        hospital: '',
-        designation: '',
-        working_at: '',
       })
       navigate('/all/client')
     }
-  }
-
-  const saveEmailDate = async (data) => {
-    const { errors, data: newTodo } = await client.models.EmailList.create({
-      category_id: data.categoryId,
-      name: data.name,
-      email: data.email,
-      cnic: data.cnic.replace(' ', ''),
-      designation: data.designation,
-      hospital: data.hospital,
-      working_at: data.working_at,
-      address: data.address,
-    })
   }
   const handleChange = (e) => {
     let phone_no = e.clipboardData.getData('Text').replace('-', '')
@@ -178,14 +144,7 @@ const AddClient = () => {
             <CFormSelect
               aria-label="Select Client Category"
               value={state.categoryId}
-              onChange={(e) => {
-                setSate({ ...state, categoryId: e.target.value })
-                if (e.target.value === 'Nursing') {
-                  setShowHospital(true)
-                } else {
-                  setShowHospital(false)
-                }
-              }}
+              onChange={(e) => setSate({ ...state, categoryId: e.target.value })}
             >
               <option>Open this select menu</option>
               {categories.map((item) => {
@@ -220,20 +179,7 @@ const AddClient = () => {
               onPaste={handleChange}
               placeholder="Add Phone Number"
             />
-            <p style={{ color: 'red' }}>{error}</p>
-          </div>
-          <div className="m-3">
-            <CFormLabel htmlFor="exampleFormControlInput1">Email</CFormLabel>
-            <CFormInput
-              type="email"
-              id="exampleFormControlInput1"
-              name="email"
-              value={state.email}
-              onChange={(e) => setSate({ ...state, email: e.target.value })}
-              placeholder="Add Email"
-              onPaste={handleChange}
-            />
-            <p style={{ color: 'red' }}>{email_error !== '' ? email_error : ''}</p>
+            <p style={{ color: 'red' }}>{!state.phone_no ? error : ''}</p>
           </div>
           <div className="m-3">
             <CFormLabel htmlFor="exampleFormControlInput1">CNIC No</CFormLabel>
@@ -247,19 +193,17 @@ const AddClient = () => {
             />
             {/* <p style={{ color: 'red' }}>{error}</p> */}
           </div>
-          {showHospital === true ? (
-            <div className="m-3">
-              <CFormLabel htmlFor="exampleFormControlInput1">Hospital</CFormLabel>
-              <CFormInput
-                type="text"
-                id="exampleFormControlInput1"
-                name="hospital"
-                value={state.hospital}
-                onChange={(e) => setSate({ ...state, hospital: e.target.value })}
-                placeholder="Add Hospital"
-              />
-            </div>
-          ) : null}
+          {showHospital ?? div className="m-3">
+            <CFormLabel htmlFor="exampleFormControlInput1">Hospital</CFormLabel>
+            <CFormInput
+              type="text"
+              id="exampleFormControlInput1"
+              name="hospital"
+              value={state.hospital}
+              onChange={(e) => setSate({ ...state, hospital: e.target.value })}
+              placeholder="Add Hospital"
+            />
+          </div>}
           <div className="m-3">
             <CFormLabel htmlFor="exampleFormControlInput1">Designation</CFormLabel>
             <CFormInput
@@ -271,18 +215,6 @@ const AddClient = () => {
               placeholder="Add Designation"
             />
             {/* <p style={{ color: 'red' }}>{!state.designation ? error : ''}</p> */}
-          </div>
-          <div className="m-3">
-            <CFormLabel htmlFor="exampleFormControlInput1">Working At</CFormLabel>
-            <CFormInput
-              type="text"
-              id="exampleFormControlInput1"
-              name="working_at"
-              value={state.working_at}
-              onChange={(e) => setSate({ ...state, working_at: e.target.value })}
-              placeholder="Add Working At"
-            />
-            {/* <p style={{ color: 'red' }}>{!state.address ? error : ''}</p> */}
           </div>
           <div className="m-3">
             <CFormLabel htmlFor="exampleFormControlInput1">Address</CFormLabel>
@@ -298,14 +230,8 @@ const AddClient = () => {
           </div>
           <div className="m-3">
             <div className="d-grid gap-2 col-6 mx-auto">
-              <CButton
-                color="primary"
-                style={{ marginTop: '4%' }}
-                loading={loading}
-                onClick={() => saveDate()}
-              >
-                {loading === true ?? <Spinner as="span" animation="grow" />}
-                {loading ? ' ...Saving Record' : id ? 'Update' : 'Submit'}
+              <CButton color="primary" style={{ marginTop: '4%' }} onClick={() => saveDate()}>
+                {id ? 'Update' : 'Submit'}
               </CButton>
             </div>
           </div>

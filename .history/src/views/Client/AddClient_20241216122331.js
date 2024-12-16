@@ -107,12 +107,8 @@ const AddClient = () => {
       cnic: state.cnic.replace(' ', ''),
       designation: state.designation,
       hospital: state.hospital,
-      working_at: state.working_at,
       address: state.address,
     })
-    if (state.email.trim() !== '') {
-      await saveEmailDate(state)
-    }
     if (errors) {
       console.log(errors[0].errorType)
       if (errors[0].errorType === 'DynamoDB:ConditionalCheckFailedException') {
@@ -138,6 +134,8 @@ const AddClient = () => {
   }
 
   const saveEmailDate = async (data) => {
+
+
     const { errors, data: newTodo } = await client.models.EmailList.create({
       category_id: data.categoryId,
       name: data.name,
@@ -148,6 +146,20 @@ const AddClient = () => {
       working_at: data.working_at,
       address: data.address,
     })
+    if (errors) {
+      if (errors[0].errorType === 'DynamoDB:ConditionalCheckFailedException') {
+        setError('Email Already Exist')
+      } else {
+        setError(errors[0].message)
+      }
+    } else {
+      setSate({
+        name: '',
+        categoryId: '',
+        phone_no: '',
+      })
+      navigate('/all/email')
+    }
   }
   const handleChange = (e) => {
     let phone_no = e.clipboardData.getData('Text').replace('-', '')

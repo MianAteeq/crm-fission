@@ -92,7 +92,7 @@ const AddClient = () => {
     }
     if (state.email.trim() !== '') {
       if (validateEmail(state.email) === false) {
-        setEmailError('Email is Invalid')
+        setEmailError('InValid Email')
         return
       } else {
         setEmailError('')
@@ -107,12 +107,8 @@ const AddClient = () => {
       cnic: state.cnic.replace(' ', ''),
       designation: state.designation,
       hospital: state.hospital,
-      working_at: state.working_at,
       address: state.address,
     })
-    if (state.email.trim() !== '') {
-      await saveEmailDate(state)
-    }
     if (errors) {
       console.log(errors[0].errorType)
       if (errors[0].errorType === 'DynamoDB:ConditionalCheckFailedException') {
@@ -135,19 +131,6 @@ const AddClient = () => {
       })
       navigate('/all/client')
     }
-  }
-
-  const saveEmailDate = async (data) => {
-    const { errors, data: newTodo } = await client.models.EmailList.create({
-      category_id: data.categoryId,
-      name: data.name,
-      email: data.email,
-      cnic: data.cnic.replace(' ', ''),
-      designation: data.designation,
-      hospital: data.hospital,
-      working_at: data.working_at,
-      address: data.address,
-    })
   }
   const handleChange = (e) => {
     let phone_no = e.clipboardData.getData('Text').replace('-', '')

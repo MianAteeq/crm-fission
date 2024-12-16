@@ -18,9 +18,9 @@ import { useState } from 'react'
 import DataTable from 'react-data-table-component'
 import * as XLSX from 'xlsx'
 import styled from 'styled-components'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation, useParams } from 'react-router-dom'
 const client = generateClient()
-const AllContact = () => {
+const DoctorDBS = () => {
   const [categories, setCategory] = useState([])
   const [filteredItems, setFilterItem] = useState([])
   const [visible, setVisible] = useState(false)
@@ -28,28 +28,70 @@ const AllContact = () => {
   const [loadingTable, setLoadingActive] = useState(true)
   const [filterText, setFilterText] = React.useState('')
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const location = useLocation()
   const inputFile = useRef(null)
   const [showNumber, setNumber] = useState(false)
   const [totalRecord, setTotalRecord] = useState(0)
   const [savedRecord, setSavedReocrd] = useState(0)
   const [failedRecord, setFailedRecord] = useState(0)
+  const [failedRecords, setFailedRecords] = useState(0)
   const [name, setName] = useState('')
+
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const capitalizeFirstLetter = (val) => {
+    return String(val).charAt(0).toUpperCase() + String(val).slice(1)
+  }
   const fetchTodos = async () => {
     const { data: items, errors } = await client.models.Client.list({
       limit: 20000,
+      filter: {
+        category_id: {
+          beginsWith: name,
+        },
+      },
     })
+
+    // await client.models.Client.list({
+    //   limit: 20000,
+    // })
     setCategory(items)
     setFilterItem(items.sort((a, b) => a.name.localeCompare(b.name)))
+    // await deleteAll(items)
+    console.log(items.length, 'items.length')
     setLoadingActive(false)
   }
+  useEffect(() => {
+    let pathName = location.pathname
+      .replace('client', '')
+      .replace('/', '')
+      .replace('/', '')
+      .replace('-', ' ')
+    if (capitalizeFirstLetter(pathName) === 'Doctor bds') {
+      setName('Doctor BDS')
+    } else if (capitalizeFirstLetter(pathName) === 'Doctor mbs') {
+      setName('Doctor MBBS')
+    } else {
+      setName(capitalizeFirstLetter(pathName))
+    }
+  }, [location])
 
   useEffect(() => {
-    fetchTodos()
-  }, [])
+    if (name !== '') {
+      setLoadingActive(true)
+      fetchTodos()
+    }
+  }, [name])
+
   useEffect(() => {
-    const sub = client.models.Client.observeQuery({ limit: 20000 }).subscribe({
+    const sub = client.models.Client.observeQuery({
+      limit: 20000,
+      filter: {
+        category_id: {
+          beginsWith: name,
+        },
+      },
+    }).subscribe({
       next: ({ items }) => {
         setCategory([...items])
         setFilterItem([...items])
@@ -57,7 +99,7 @@ const AllContact = () => {
     })
 
     return () => sub.unsubscribe()
-  }, [])
+  }, [name])
 
   useEffect(() => {
     if (failedRecord + savedRecord === totalRecord) {
@@ -84,6 +126,7 @@ const AllContact = () => {
   }, [filterText])
 
 
+
   const saveDate = async () => {
     const reader = new FileReader()
 
@@ -93,7 +136,9 @@ const AllContact = () => {
       const sheet = workbook.Sheets[sheetName]
       const sheetData = XLSX.utils.sheet_to_json(sheet)
       setTotalRecord(sheetData.length)
-      let exists = Object.keys(sheetData[0]).filter((record) => record === 'phone_number')
+      let exists = Object.keys(sheetData[0]).filter(
+        (record) => record.replace(' ', '') === 'phone_number',
+      )
       if (exists.length === 0) {
         setError('Invalid File Format')
         inputFile.current.value = null
@@ -102,8 +147,8 @@ const AllContact = () => {
       }
       setLoading(true)
       setNumber(true)
-      let isSaved = await SaveRecord(sheetData)
 
+      let isSaved = await SaveRecord(sheetData)
       if (isSaved === true) {
         setFile(null)
         inputFile.current.value = null
@@ -121,6 +166,7 @@ const AllContact = () => {
       }
 
       const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
+
       // fetchTodos()
     }
   }
@@ -130,23 +176,27 @@ const AllContact = () => {
       name: 'ID',
       selector: (row, i) => i + 1,
     },
-    {
-      name: 'Category',
-      selector: (row) => row.category_id,
-    },
+
     {
       name: 'Name',
       selector: (row) => row.name,
     },
     {
       name: 'Phone No',
-      selector: (row) => row.phone_number,
+      selector: (row) => row.phone_number.replace(' ', ''),
     },
     {
       name: 'CNIC',
       selector: (row) => (row.cnic ? row.cnic : 'N.A'),
     },
-
+    {
+      name: 'Address',
+      selector: (row) => (row.address ? row.address : 'N.A'),
+    },
+    {
+      name: 'Designation',
+      selector: (row) => (row.designation ? row.designation : 'N.A'),
+    },
 
     {
       name: 'Action',
@@ -173,6 +223,18 @@ const AllContact = () => {
     },
   ]
 
+  const deleteAll = async (records) => {
+    records.forEach(async (item) => {
+      // if (item.phone_number.length === 12) {
+      const toBeDeletedTodo = {
+        phone_number: item.phone_number,
+      }
+
+      const { data: deletedTodo, error } = await client.models.Client.delete(toBeDeletedTodo)
+      // }
+    })
+  }
+
   const getNumber = (phone_number) => {
     if (phone_number === undefined) {
       return 0
@@ -182,7 +244,7 @@ const AllContact = () => {
     if (regex.test(phone_number) === true) {
       return `+${phone_number}`
     }
-
+    console.log(phone_number.toString()[0])
     if (phone_number.toString()[0] == '0' || phone_number.toString()[0] === 0) {
       let numberStr = phone_number.toString()
 
@@ -199,18 +261,27 @@ const AllContact = () => {
 
   const SaveRecord = async (records) => {
     var failed = 0
+    var incomplete_digit = []
+    var wrong_digit = []
+    var save_digit = []
+    var failed_digit = []
     var saved = 0
     records.forEach(async (item) => {
-      if (item.phone_number !== undefined) {
+      let no = item?.phone_number?.toString().replace(' ', '').replace('-', '')
+      if (no !== undefined && no !== '' && no !== null) {
         let phone_number = getNumber(
           item?.phone_number?.toString().replace(' ', '').replace('-', ''),
         )
+
         if (phone_number.length < 13) {
           failed++
+          incomplete_digit.push(phone_number)
+          // wrong_digit.push(item?.phone_number?.toString().replace(' ', '').replace('-', ''))
           return
         }
+
         const { errors, data: newTodo } = await client.models.Client.create({
-          category_id: item['category'] ?? 'Generic',
+          category_id: name,
           name: item.name ? item.name : 'No Name',
           designation: item.designation ? item.designation : '',
           cnic: item.cnic ? item.cnic : '',
@@ -220,20 +291,31 @@ const AllContact = () => {
         })
         if (newTodo !== null) {
           saved++
+          save_digit.push(item.phone_number)
           setSavedReocrd(saved)
         } else {
           failed++
 
+          failed_digit.push(item.phone_number)
           setFailedRecord(failed)
+          setFailedRecords([failed_digit])
         }
       } else {
         failed++
         setFailedRecord(failed)
+        wrong_digit.push(item.phone_number)
       }
     })
 
+    console.log(incomplete_digit, 'incomplete_digit')
+    console.log(wrong_digit, 'wrong_digit')
+    console.log(save_digit, 'save_digit')
+    console.log(failed_digit, 'failed_digit')
+
     return true
   }
+
+  console.log(failedRecords, 'failed_digit')
 
   const createForm = () => {
     return (
@@ -342,15 +424,13 @@ const AllContact = () => {
     </CButton>
   )
 
-  // const actionsMemo =
-
   return (
     <CRow>
       <CCol xs={12}>
         {visible == true ? createForm() : null}
         <CCard className="mb-4">
           <CCardHeader>
-            <strong>All Contact List</strong>{' '}
+            <strong>{name} Contact List</strong>{' '}
             <CButton
               color="primary"
               style={{ float: 'right' }}
@@ -398,4 +478,4 @@ const AllContact = () => {
   )
 }
 
-export default AllContact
+export default DoctorDBS

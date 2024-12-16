@@ -89,7 +89,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchTodos()
-    // fetchEmail()
+    fetchEmail()
   }, [])
 
   return (
